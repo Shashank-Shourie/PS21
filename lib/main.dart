@@ -64,7 +64,7 @@
 //       // so that the display can reflect the updated values. If we changed
 //       // _counter without calling setState(), then the build method would not be
 //       // called again, and so nothing would appear to happen.
-//       _counter++;     
+//       _counter++;
 //     });
 //   }
 
@@ -201,14 +201,10 @@ class _PDFPickerScreenState extends State<PDFPickerScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text("Pick and View PDF")),
       body: Center(
-        child: pdfPath == null
-            ? const Text("No PDF selected")
-            : SizedBox(
-                height: 600,
-                child: PDFView(
-                  filePath: pdfPath!,
-                ),
-              ),
+        child:
+            pdfPath == null
+                ? const Text("No PDF selected yet")
+                : SizedBox(height: 600, child: PDFView(filePath: pdfPath!)),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: pickPDF,
