@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'upload_pdf_page.dart'; // Import the Upload Files page
 
 class TgcetPage extends StatelessWidget {
+  const TgcetPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
