@@ -10,7 +10,17 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Home')),
+      appBar: AppBar(
+        title: Text('Home'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.account_circle), // Account settings icon
+            onPressed: () {
+              // Navigate to account settings page
+            },
+          ),
+        ],
+      ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -40,10 +50,7 @@ class HomePage extends StatelessWidget {
   Widget _buildButton(BuildContext context, String text, Widget page) {
     return ElevatedButton(
       onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => page),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => page));
       },
       child: Text(text),
     );
