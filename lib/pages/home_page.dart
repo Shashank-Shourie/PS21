@@ -33,14 +33,16 @@ class HomePage extends StatelessWidget {
               constraints.maxWidth * 0.35; // Adjust size dynamically
 
           return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              const Divider(thickness: 1,height: 1),
+              const SizedBox(height: 10,),
               const Text(
                 "KMIT\nKeshav Memorial Institute of Technology",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 40),
               Expanded(
                 child: GridView.count(
                   padding: const EdgeInsets.all(16),
