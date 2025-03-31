@@ -53,7 +53,7 @@ class HomePage extends StatelessWidget {
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
                   children: [
-                    _buildButton(context, "TGCET", TgcetPage(), circleSize),
+                    _buildButton(context, "TGCET", TGCETPage(), circleSize),
                     _buildButton(
                       context,
                       "Management",
