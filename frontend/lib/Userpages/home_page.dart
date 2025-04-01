@@ -35,8 +35,8 @@ class HomePage extends StatelessWidget {
           return Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              const Divider(thickness: 1,height: 1),
-              const SizedBox(height: 10,),
+              const Divider(thickness: 1, height: 1),
+              const SizedBox(height: 10),
               const Text(
                 "KMIT\nKeshav Memorial Institute of Technology",
                 textAlign: TextAlign.center,
