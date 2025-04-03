@@ -26,9 +26,11 @@ class _AuthPageState extends State<AuthPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController orgController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+
   bool isRegistering = false;
-  
-  late String baseUrl;  // Declare it as a late variable
+
+  late String baseUrl; // Declare it as a late variable
 
   @override
   void initState() {
@@ -49,7 +51,7 @@ class _AuthPageState extends State<AuthPage> {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'organizationName': orgController.text,
-        'name': 'User',
+        'name': nameController.text,
         'email': emailController.text,
         'password': passwordController.text,
       }),
@@ -101,6 +103,11 @@ class _AuthPageState extends State<AuthPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            if(isRegistering)
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(labelText: 'Name'),
+              ),
             TextField(
               controller: emailController,
               decoration: InputDecoration(labelText: 'Email'),
