@@ -2,6 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'admindashoard.dart';
 import 'dart:convert';
+import 'dart:io';
+
+Future<String> getLocalIP() async {
+  for (var interface in await NetworkInterface.list()) {
+    for (var addr in interface.addresses) {
+      if (addr.type == InternetAddressType.IPv4 &&
+          !addr.address.startsWith('127.') &&
+          !addr.address.startsWith('169.254.')) {
+        return addr.address;
+      }
+    }
+  }
+  return 'localhost';
+}
 
 class AuthPage extends StatefulWidget {
   @override
@@ -13,8 +27,21 @@ class _AuthPageState extends State<AuthPage> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController orgController = TextEditingController();
   bool isRegistering = false;
-  final String baseUrl =
-      'http://192.168.81.67:5000/api/auth'; // Change this to your backend URL
+  
+  late String baseUrl;  // Declare it as a late variable
+
+  @override
+  void initState() {
+    super.initState();
+    initializeBaseUrl();
+  }
+
+  Future<void> initializeBaseUrl() async {
+    String ip = await getLocalIP();
+    setState(() {
+      baseUrl = 'http://$ip:5000/api/auth';
+    });
+  }
 
   Future<void> register() async {
     final response = await http.post(
