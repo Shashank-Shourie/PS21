@@ -7,7 +7,7 @@ const MemberSchema = new mongoose.Schema({
     },
     Organization: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: Organization,
+        ref: 'Organization',
         required: true
     },
     email: {
@@ -19,6 +19,6 @@ const MemberSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-})
+});
 
-module.exports = mongoose.model('Members', MemberSchema)
+module.exports = mongoose.model('Member', MemberSchema);

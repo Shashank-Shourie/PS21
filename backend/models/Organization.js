@@ -1,16 +1,16 @@
 const mongoose = require('mongoose');
 
 const OrganizationSchema = new mongoose.Schema({
-    OrganizationName:{
+    OrganizationName: {
         type: String,
         required: true
     },
-    members:[
+    members: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: Members
+            ref: 'Member'
         }
     ]
-})
+});
 
-module.exports = mongoose.model('Organization',OrganizationSchema)
+module.exports = mongoose.model('Organization', OrganizationSchema);
