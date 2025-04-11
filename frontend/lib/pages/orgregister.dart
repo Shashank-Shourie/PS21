@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'admindashoard.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 
 Future<String> getLocalIP() async {
   for (var interface in await NetworkInterface.list()) {
@@ -30,7 +31,7 @@ class _AuthPageState extends State<AuthPage> {
 
   bool isRegistering = false;
 
-  late String baseUrl; // Declare it as a late variable
+  String? baseUrl; // Nullable now
 
   @override
   void initState() {
@@ -39,13 +40,28 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> initializeBaseUrl() async {
-    String ip = await getLocalIP();
+    String ip;
+
+    final deviceInfo = DeviceInfoPlugin();
+    final androidInfo = await deviceInfo.androidInfo;
+
+    final isEmulator = !androidInfo.isPhysicalDevice;
+
+    if (isEmulator) {
+      ip = '10.0.2.2'; // Emulator alias to localhost
+    } else {
+      ip = await getLocalIP(); // Real device
+    }
+
     setState(() {
       baseUrl = 'http://$ip:5000/api/auth';
+      print('Base URL initialized: $baseUrl');
     });
   }
 
   Future<void> register() async {
+    if (baseUrl == null) return;
+
     final response = await http.post(
       Uri.parse('$baseUrl/register'),
       headers: {'Content-Type': 'application/json'},
@@ -71,7 +87,13 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> login() async {
+    if (baseUrl == null) {
+      print('Base URL not initialized yet');
+      return;
+    }
+
     print("Login called");
+
     final response = await http.post(
       Uri.parse('$baseUrl/login'),
       headers: {'Content-Type': 'application/json'},
@@ -96,6 +118,13 @@ class _AuthPageState extends State<AuthPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Show a loading spinner while baseUrl is being initialized
+    if (baseUrl == null) {
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: Text(isRegistering ? 'Register' : 'Login')),
       body: Padding(
@@ -103,7 +132,7 @@ class _AuthPageState extends State<AuthPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if(isRegistering)
+            if (isRegistering)
               TextField(
                 controller: nameController,
                 decoration: InputDecoration(labelText: 'Name'),
