@@ -78,7 +78,7 @@ class _AuthPageState extends State<AuthPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => AdminDashboard(orgName: orgController.text,orgid: responseData['orgid'],),
+          builder: (context) => AdminDashboard(orgName: orgController.text,orgid: responseData['orgid']['_id'],),
         ),
       );
     } else {
@@ -104,11 +104,12 @@ class _AuthPageState extends State<AuthPage> {
     );
 
     final responseData = jsonDecode(response.body);
+    print('Login Response: $responseData');
     if (response.statusCode == 200) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => AdminDashboard(orgName: responseData['org'], orgid: responseData['orgid'],),
+          builder: (context) => AdminDashboard(orgName: responseData['org'], orgid: responseData['orgid']['_id'],),
         ),
       );
     } else {
