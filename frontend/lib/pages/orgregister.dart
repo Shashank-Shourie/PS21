@@ -78,7 +78,7 @@ class _AuthPageState extends State<AuthPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => AdminDashboard(orgName: orgController.text),
+          builder: (context) => AdminDashboard(orgName: orgController.text,orgid: responseData['orgid'],),
         ),
       );
     } else {
@@ -108,7 +108,7 @@ class _AuthPageState extends State<AuthPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => AdminDashboard(orgName: 'Your Org Name'),
+          builder: (context) => AdminDashboard(orgName: responseData['org'], orgid: responseData['orgid'],),
         ),
       );
     } else {
