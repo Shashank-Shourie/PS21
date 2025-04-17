@@ -13,6 +13,8 @@ router.post('/register', async (req, res) => {
         if (!organization) {
             organization = new Organization({ OrganizationName: organizationName, members: [] });
             await organization.save();
+        }else{
+            return res.status(400).json({error:'Organization already exists, contact them to get access'});
         }
         let existingMember = await Member.findOne({ email });
         if (existingMember) {
@@ -71,5 +73,24 @@ router.post('/login', async (req, res) => {
 router.post('/logout', (req, res) => {
     res.status(200).json({ message: 'Logout successful' });
 });
+
+router.post('/registerorg',async(req,res)=>{
+    try{
+        const { organizationName, name, email,deafault_password } = req.body;
+        let organization = await Organization.findOne({ OrganizationName: organizationName });
+        const hashedPassword = bcrypt.hash(deafault_password,10);
+        const newMember = new Member({
+            name,
+            email,
+            password: hashedPassword,
+            Organization: organization._id
+        });
+        await newMember.save();
+        res.status(200).json({message:"New account added successfully",newMember});
+    }catch(err){
+        console.log(err);
+        res.status(500).json({error:'server error'})
+    }
+})
 
 module.exports = router;
