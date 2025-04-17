@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-// import 'adminpages/home_page.dart';
+// import '/pages/adminpages/home_page.dart';
 import 'pages/orgregister.dart';
 
 void main() {
