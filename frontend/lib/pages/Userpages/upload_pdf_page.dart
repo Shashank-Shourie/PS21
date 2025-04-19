@@ -70,7 +70,7 @@ class _PDFPickerScreenState extends State<PDFPickerScreen> {
 
   Future<void> uploadPDF(File file) async {
   try {
-    var uri = Uri.parse('http://10.0.2.2:5000/api/extract-text');
+    var uri = Uri.parse('http://10.0.2.2:5000/extract/extract-text');
     var request = http.MultipartRequest('POST', uri)
       ..files.add(await http.MultipartFile.fromPath('file', file.path));
 
