@@ -2,12 +2,17 @@ const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
 const fs = require('fs');
+const connectDB = require('./config/db');
 require('dotenv').config();
 const { TextractClient, AnalyzeDocumentCommand } = require('@aws-sdk/client-textract');
 
 const app = express();
+connectDB();
+
+
 app.use(express.json());
 app.use(cors());
+app.use('/api/auth', require('./routes/auth'));
 
 // AWS Configuration
 const textractClient = new TextractClient({
