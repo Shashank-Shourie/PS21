@@ -6,15 +6,6 @@ const Member = require('../models/Members.js');
 
 const router = express.Router();
 
-router.post('/userregister',async(req,res)=>{
-    try {
-        
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({error:'Server error. User not creater try again'});
-    }
-})
-
 router.post('/register', async (req, res) => {
     try {
         const { organizationName, name, email, password } = req.body;
