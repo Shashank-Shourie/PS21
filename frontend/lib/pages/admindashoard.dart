@@ -5,7 +5,7 @@ import 'orgregister.dart';
 class AdminDashboard extends StatelessWidget {
   final String orgName;
   final String orgid;
-  AdminDashboard({required this.orgName, required this.orgid});
+  const AdminDashboard({super.key, required this.orgName, required this.orgid});
 
   @override
   Widget build(BuildContext context) {

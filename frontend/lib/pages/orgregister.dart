@@ -1,3 +1,5 @@
+import 'dart:nativewrappers/_internal/vm/lib/internal_patch.dart';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'admindashoard.dart';
@@ -19,6 +21,8 @@ Future<String> getLocalIP() async {
 }
 
 class AuthPage extends StatefulWidget {
+  const AuthPage({super.key});
+
   @override
   _AuthPageState createState() => _AuthPageState();
 }
@@ -55,7 +59,7 @@ class _AuthPageState extends State<AuthPage> {
 
     setState(() {
       baseUrl = 'http://$ip:5000/api/auth';
-      print('Base URL initialized: $baseUrl');
+      printToConsole('Base URL initialized: $baseUrl');
     });
   }
 
@@ -82,17 +86,17 @@ class _AuthPageState extends State<AuthPage> {
         ),
       );
     } else {
-      print('Registration failed: ${responseData['error']}');
+      printToConsole('Registration failed: ${responseData['error']}');
     }
   }
 
   Future<void> login() async {
     if (baseUrl == null) {
-      print('Base URL not initialized yet');
+      printToConsole('Base URL not initialized yet');
       return;
     }
 
-    print("Login called");
+    printToConsole("Login called");
 
     final response = await http.post(
       Uri.parse('$baseUrl/login'),
@@ -104,7 +108,7 @@ class _AuthPageState extends State<AuthPage> {
     );
 
     final responseData = jsonDecode(response.body);
-    print('Login Response: $responseData');
+    printToConsole('Login Response: $responseData');
     if (response.statusCode == 200) {
       Navigator.pushReplacement(
         context,
@@ -113,7 +117,7 @@ class _AuthPageState extends State<AuthPage> {
         ),
       );
     } else {
-      print('Login failed: ${responseData['error']}');
+      printToConsole('Login failed: ${responseData['error']}');
     }
   }
 
