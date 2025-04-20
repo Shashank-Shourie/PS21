@@ -8,65 +8,70 @@ class AccountSettingsPage extends StatefulWidget {
 }
 
 class _AccountSettingsPageState extends State<AccountSettingsPage> {
-  bool isDarkMode = false; // Toggle for dark mode
-  String username = "User"; // Placeholder username
+  String username = "User";
+  String email = "user@example.com";
+  String admissionNumber = "ADM202501";
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Account Settings")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      appBar: AppBar(title: const Text("Account Settings"), centerTitle: true),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "Profile",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              "Profile Info",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 10),
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: Text("Username: $username"),
-              trailing: IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () {
-                  _changeUsername(context);
-                },
-              ),
-            ),
-            const Divider(),
-            const SizedBox(height: 10),
+            const SizedBox(height: 16),
 
-            // Dark Mode Toggle
-            SwitchListTile(
-              title: const Text("Dark Mode"),
-              value: isDarkMode,
-              onChanged: (value) {
-                setState(() {
-                  isDarkMode = value;
-                });
-              },
-              secondary: const Icon(Icons.dark_mode),
+            _buildInfoCard(
+              icon: Icons.person,
+              label: "Username",
+              value: username,
+              onEdit: () => _changeUsername(context),
             ),
-            const Divider(),
-            const SizedBox(height: 10),
 
-            // Logout Button
+            const SizedBox(height: 12),
+            _buildInfoCard(
+              icon: Icons.email,
+              label: "Email",
+              value: email,
+              onEdit: null,
+            ),
+
+            const SizedBox(height: 12),
+            _buildInfoCard(
+              icon: Icons.badge,
+              label: "Admission No",
+              value: admissionNumber,
+              onEdit: null,
+            ),
+
+            const SizedBox(height: 30),
+            const Divider(thickness: 1),
+            const SizedBox(height: 20),
+
             Center(
               child: ElevatedButton.icon(
-                icon: const Icon(Icons.logout),
-                label: const Text("Logout"),
+                icon: const Icon(Icons.lock_outline),
+                label: const Text("Change Password"),
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
+                    horizontal: 24,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   textStyle: const TextStyle(fontSize: 16),
-                  backgroundColor: Colors.red,
                 ),
                 onPressed: () {
-                  _logout(context);
+                  _changePassword(context);
                 },
               ),
             ),
@@ -76,9 +81,36 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     );
   }
 
-  // Function to Change Username
+  Widget _buildInfoCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    void Function()? onEdit,
+  }) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: ListTile(
+          leading: Icon(icon, color: Colors.blueAccent),
+          title: Text("$label: $value"),
+          trailing:
+              onEdit != null
+                  ? IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.grey),
+                    onPressed: onEdit,
+                  )
+                  : null,
+        ),
+      ),
+    );
+  }
+
   void _changeUsername(BuildContext context) {
-    TextEditingController usernameController = TextEditingController();
+    TextEditingController usernameController = TextEditingController(
+      text: username,
+    );
     showDialog(
       context: context,
       builder: (context) {
@@ -95,9 +127,11 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
             ),
             TextButton(
               onPressed: () {
-                setState(() {
-                  username = usernameController.text;
-                });
+                if (usernameController.text.trim().isNotEmpty) {
+                  setState(() {
+                    username = usernameController.text.trim();
+                  });
+                }
                 Navigator.pop(context);
               },
               child: const Text("Save"),
@@ -108,14 +142,39 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     );
   }
 
-  // Function to Logout
-  void _logout(BuildContext context) {
+  void _changePassword(BuildContext context) {
+    TextEditingController oldPasswordController = TextEditingController();
+    TextEditingController newPasswordController = TextEditingController();
+    TextEditingController confirmPasswordController = TextEditingController();
+
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Logout"),
-          content: const Text("Are you sure you want to log out?"),
+          title: const Text("Change Password"),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: oldPasswordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: "Old Password"),
+                ),
+                TextField(
+                  controller: newPasswordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: "New Password"),
+                ),
+                TextField(
+                  controller: confirmPasswordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: "Confirm New Password",
+                  ),
+                ),
+              ],
+            ),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -123,12 +182,24 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
             ),
             TextButton(
               onPressed: () {
+                String newPass = newPasswordController.text;
+                String confirmPass = confirmPasswordController.text;
+
+                if (newPass != confirmPass) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("New passwords do not match")),
+                  );
+                  return;
+                }
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Password changed successfully"),
+                  ),
+                );
                 Navigator.pop(context);
-                Navigator.pop(
-                  context,
-                ); // Navigate back to HomePage after logout
               },
-              child: const Text("Logout"),
+              child: const Text("Change"),
             ),
           ],
         );
