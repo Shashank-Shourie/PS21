@@ -1,5 +1,3 @@
-import 'dart:nativewrappers/_internal/vm/lib/internal_patch.dart';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'admindashoard.dart';
@@ -21,8 +19,6 @@ Future<String> getLocalIP() async {
 }
 
 class AuthPage extends StatefulWidget {
-  const AuthPage({super.key});
-
   @override
   _AuthPageState createState() => _AuthPageState();
 }
@@ -35,7 +31,7 @@ class _AuthPageState extends State<AuthPage> {
 
   bool isRegistering = false;
 
-  String? baseUrl; // Nullable now
+  String? baseUrl;
 
   @override
   void initState() {
@@ -59,7 +55,7 @@ class _AuthPageState extends State<AuthPage> {
 
     setState(() {
       baseUrl = 'http://$ip:5000/api/auth';
-      printToConsole('Base URL initialized: $baseUrl');
+      print('Base URL initialized: $baseUrl');
     });
   }
 
@@ -79,24 +75,27 @@ class _AuthPageState extends State<AuthPage> {
 
     final responseData = jsonDecode(response.body);
     if (response.statusCode == 201) {
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-          builder: (context) => AdminDashboard(orgName: orgController.text,orgid: responseData['orgid']['_id'],),
+          builder:
+              (context) => AdminDashboard(
+                orgName: orgController.text,
+                orgid: responseData['orgid']['_id'],
+              ),
         ),
+        (Route<dynamic> route) => false,
       );
     } else {
-      printToConsole('Registration failed: ${responseData['error']}');
+      print('Registration failed: ${responseData['error']}');
     }
   }
 
   Future<void> login() async {
     if (baseUrl == null) {
-      printToConsole('Base URL not initialized yet');
+      print('Base URL not initialized yet');
       return;
     }
-
-    printToConsole("Login called");
 
     final response = await http.post(
       Uri.parse('$baseUrl/login'),
@@ -108,80 +107,172 @@ class _AuthPageState extends State<AuthPage> {
     );
 
     final responseData = jsonDecode(response.body);
-    printToConsole('Login Response: $responseData');
     if (response.statusCode == 200) {
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-          builder: (context) => AdminDashboard(orgName: responseData['org'], orgid: responseData['orgid']['_id'],),
+          builder:
+              (context) => AdminDashboard(
+                orgName: responseData['org'],
+                orgid: responseData['orgid']['_id'],
+              ),
         ),
+        (Route<dynamic> route) => false,
       );
     } else {
-      printToConsole('Login failed: ${responseData['error']}');
+      print('Login failed: ${responseData['error']}');
     }
+  }
+
+  Widget buildToggleButtons() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => isRegistering = false),
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color:
+                      !isRegistering
+                          ? Colors.deepPurpleAccent
+                          : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Text(
+                    "Login",
+                    style: TextStyle(
+                      color: !isRegistering ? Colors.white : Colors.black87,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => isRegistering = true),
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color:
+                      isRegistering
+                          ? Colors.deepPurpleAccent
+                          : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Text(
+                    "Register",
+                    style: TextStyle(
+                      color: isRegistering ? Colors.white : Colors.black87,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildTextField(
+    String label,
+    TextEditingController controller, {
+    bool obscure = false,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Show a loading spinner while baseUrl is being initialized
     if (baseUrl == null) {
-      return Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    return Scaffold(
-      appBar: AppBar(title: Text(isRegistering ? 'Register' : 'Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (isRegistering)
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(labelText: 'Name'),
-              ),
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(labelText: 'Email'),
-              keyboardType: TextInputType.emailAddress,
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 36),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                buildToggleButtons(),
+                SizedBox(height: 32),
+                if (isRegistering) buildTextField('Name', nameController),
+                if (isRegistering) SizedBox(height: 16),
+                buildTextField('Email', emailController),
+                if (isRegistering) SizedBox(height: 16),
+                if (isRegistering)
+                  buildTextField('Organization Name', orgController),
+                SizedBox(height: 16),
+                buildTextField('Password', passwordController, obscure: true),
+                SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: isRegistering ? register : login,
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 14),
+                    backgroundColor: Colors.deepPurpleAccent,
+                    foregroundColor: Colors.white,
+                    minimumSize: Size(double.infinity, 48),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    isRegistering ? 'Register' : 'Login',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                SizedBox(height: 16),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      isRegistering = !isRegistering;
+                    });
+                  },
+                  child: RichText(
+                    text: TextSpan(
+                      text:
+                          isRegistering
+                              ? 'Already have an account? '
+                              : "Don't have an account? ",
+                      style: TextStyle(color: Colors.black),
+                      children: [
+                        TextSpan(
+                          text: isRegistering ? 'Login' : 'Register',
+                          style: TextStyle(
+                            color: Colors.deepPurpleAccent,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-            if (isRegistering)
-              TextField(
-                controller: orgController,
-                decoration: InputDecoration(labelText: 'Organization Name'),
-              ),
-            TextField(
-              controller: passwordController,
-              decoration: InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                if (isRegistering) {
-                  register();
-                } else {
-                  login();
-                }
-              },
-              child: Text(isRegistering ? 'Register' : 'Login'),
-            ),
-            SwitchListTile(
-              title: Text(
-                isRegistering
-                    ? 'Already have an account? Login'
-                    : "Don't have an account? Register",
-              ),
-              value: isRegistering,
-              onChanged: (value) {
-                setState(() {
-                  isRegistering = value;
-                });
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );
