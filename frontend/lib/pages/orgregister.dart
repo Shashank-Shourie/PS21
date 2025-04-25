@@ -4,6 +4,7 @@ import 'admindashoard.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<String> getLocalIP() async {
   for (var interface in await NetworkInterface.list()) {
@@ -40,24 +41,14 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> initializeBaseUrl() async {
-    String ip;
+  final host = dotenv.env['BACKEND_URL']!;
+  setState(() {
+    // use HTTPS and no port
+    baseUrl = '$host/api/auth';
+    print('Base URL initialized: $baseUrl');
+  });
+}
 
-    final deviceInfo = DeviceInfoPlugin();
-    final androidInfo = await deviceInfo.androidInfo;
-
-    final isEmulator = !androidInfo.isPhysicalDevice;
-
-    if (isEmulator) {
-      ip = '10.0.2.2'; // Emulator alias to localhost
-    } else {
-      ip = await getLocalIP(); // Real device
-    }
-
-    setState(() {
-      baseUrl = 'http://$ip:5000/api/auth';
-      print('Base URL initialized: $baseUrl');
-    });
-  }
 
   Future<void> register() async {
     if (baseUrl == null) return;
@@ -92,37 +83,47 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> login() async {
-    if (baseUrl == null) {
-      print('Base URL not initialized yet');
-      return;
-    }
+    print('Calling: $baseUrl/login');
 
-    final response = await http.post(
-      Uri.parse('$baseUrl/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'email': emailController.text,
-        'password': passwordController.text,
-      }),
-    );
+  if (baseUrl == null) return;
 
-    final responseData = jsonDecode(response.body);
-    if (response.statusCode == 200) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder:
-              (context) => AdminDashboard(
-                orgName: responseData['org'],
-                orgid: responseData['orgid']['_id'],
-              ),
+  final response = await http.post(
+    Uri.parse('$baseUrl/login'),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({
+      'email': emailController.text,
+      'password': passwordController.text,
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    // safe to parse JSON
+    final data = jsonDecode(response.body);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AdminDashboard(
+          orgName: data['org'],
+          orgid: data['orgid']['_id'],
         ),
-        (Route<dynamic> route) => false,
-      );
-    } else {
-      print('Login failed: ${responseData['error']}');
+      ),
+    );
+  } else {
+    // maybe the server sent plain text or an error JSON
+    String message;
+    try {
+      final errorData = jsonDecode(response.body);
+      message = errorData['error'] ?? response.body;
+    } catch (_) {
+      message = response.body;  // raw text like "Not Found"
     }
+    print('Login failed (${response.statusCode}): $message');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Login failed: $message')),
+    );
   }
+}
+
 
   Widget buildToggleButtons() {
     return Container(
