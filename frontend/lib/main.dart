@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-//import '/pages/Userpages/home_page.dart';
-import 'pages/orgregister.dart';
+import '/pages/Userpages/home_page.dart';
+// import 'pages/orgregister.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: AuthPage(),
+      home: HomePage(),
     );
   }
 }

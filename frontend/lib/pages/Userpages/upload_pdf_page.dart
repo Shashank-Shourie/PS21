@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PDFPickerScreen extends StatefulWidget {
   const PDFPickerScreen({super.key});
@@ -14,6 +15,7 @@ class PDFPickerScreen extends StatefulWidget {
 }
 
 class _PDFPickerScreenState extends State<PDFPickerScreen> {
+  String baseUrl = '';
   String? pdfPath;
   String? extractedText;
   bool isLoading = false;
@@ -68,98 +70,113 @@ class _PDFPickerScreenState extends State<PDFPickerScreen> {
     }
   }
 
-  Future<void> uploadPDF(File file) async {
-  try {
-    var uri = Uri.parse('http://10.0.2.2:5000/extract/extract-text');
-    var request = http.MultipartRequest('POST', uri)
-      ..files.add(await http.MultipartFile.fromPath('file', file.path));
-
+  Future<void> initializeBaseUrl() async {
+    final host = dotenv.env['BACKEND_URL']!;
     setState(() {
-      uploadProgress = 0;
-    });
-
-    var client = http.Client();
-    var streamedResponse = await client.send(request);
-
-    // Optional: track upload progress
-    final contentLength = streamedResponse.contentLength ?? 0;
-    int bytesReceived = 0;
-    
-    final completer = Completer<http.Response>();
-    final responseBytes = <int>[];
-
-    streamedResponse.stream.listen(
-      (chunk) {
-        responseBytes.addAll(chunk);
-        bytesReceived += chunk.length;
-        if (contentLength > 0) {
-          setState(() {
-            uploadProgress = bytesReceived / contentLength;
-          });
-        }
-      },
-      onDone: () {
-        final response = http.Response.bytes(
-          responseBytes,
-          streamedResponse.statusCode,
-          headers: streamedResponse.headers,
-          request: streamedResponse.request,
-        );
-        completer.complete(response);
-      },
-      onError: (error) {
-        completer.completeError(error);
-      },
-      cancelOnError: true,
-    );
-
-    final response = await completer.future;
-
-    if (kDebugMode) {
-      print('Server response: ${response.body}');
-      print('Status code: ${response.statusCode}');
-    }
-
-    dynamic decoded;
-    try {
-      decoded = json.decode(response.body);
-    } catch (e) {
-      throw FormatException('Invalid server response: ${response.body}');
-    }
-
-    if (response.statusCode == 200) {
-      setState(() {
-        extractedText = decoded['extractedText'] ?? 'No text found';
-        pageCount = decoded['pageCount'];
-        errorMessage = null;
-      });
-    } else {
-      setState(() {
-        errorMessage = decoded['error'] ??
-            'Server error (Status: ${response.statusCode})';
-        if (decoded['details'] != null) {
-          errorMessage = '$errorMessage\nDetails: ${decoded['details']}';
-        }
-      });
-    }
-  } on TimeoutException catch (_) {
-    setState(() {
-      errorMessage = 'Request timeout - server took too long to respond';
-    });
-  } on FormatException catch (e) {
-    setState(() {
-      errorMessage = 'Data format error: ${e.message}';
-    });
-  } catch (e) {
-    setState(() {
-      errorMessage = 'Upload failed: ${e.toString()}';
-    });
-  } finally {
-    setState(() {
-      isLoading = false;
+      // use HTTPS and no port
+      baseUrl = '$host/extract/extract-text';
+      print('Base URL initialized: $baseUrl');
     });
   }
-}
+
+  Future<void> uploadPDF(File file) async {
+    try {
+      final host = dotenv.env['BACKEND_URL'];
+      if (host == null || host.isEmpty) {
+        throw Exception('BACKEND_URL is not set in .env file');
+      }
+
+      var uri = Uri.parse('$host/extract/extract-text');
+      var request = http.MultipartRequest('POST', uri)
+        ..files.add(await http.MultipartFile.fromPath('file', file.path));
+
+      setState(() {
+        uploadProgress = 0;
+      });
+
+      var client = http.Client();
+      var streamedResponse = await client.send(request);
+
+      // Optional: track upload progress
+      final contentLength = streamedResponse.contentLength ?? 0;
+      int bytesReceived = 0;
+
+      final completer = Completer<http.Response>();
+      final responseBytes = <int>[];
+
+      streamedResponse.stream.listen(
+        (chunk) {
+          responseBytes.addAll(chunk);
+          bytesReceived += chunk.length;
+          if (contentLength > 0) {
+            setState(() {
+              uploadProgress = bytesReceived / contentLength;
+            });
+          }
+        },
+        onDone: () {
+          final response = http.Response.bytes(
+            responseBytes,
+            streamedResponse.statusCode,
+            headers: streamedResponse.headers,
+            request: streamedResponse.request,
+          );
+          completer.complete(response);
+        },
+        onError: (error) {
+          completer.completeError(error);
+        },
+        cancelOnError: true,
+      );
+
+      final response = await completer.future;
+
+      if (kDebugMode) {
+        print('Server response: ${response.body}');
+        print('Status code: ${response.statusCode}');
+      }
+
+      dynamic decoded;
+      try {
+        decoded = json.decode(response.body);
+      } catch (e) {
+        throw FormatException('Invalid server response: ${response.body}');
+      }
+
+      if (response.statusCode == 200) {
+        setState(() {
+          extractedText = decoded['extractedText'] ?? 'No text found';
+          pageCount = decoded['pageCount'];
+          errorMessage = null;
+        });
+      } else {
+        setState(() {
+          errorMessage =
+              decoded['error'] ??
+              'Server error (Status: ${response.statusCode})';
+          if (decoded['details'] != null) {
+            errorMessage = '$errorMessage\nDetails: ${decoded['details']}';
+          }
+        });
+      }
+    } on TimeoutException catch (_) {
+      setState(() {
+        errorMessage = 'Request timeout - server took too long to respond';
+      });
+    } on FormatException catch (e) {
+      setState(() {
+        errorMessage = 'Data format error: ${e.message}';
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Upload failed: ${e.toString()}';
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -173,7 +190,7 @@ class _PDFPickerScreenState extends State<PDFPickerScreen> {
               child: CircularProgressIndicator(
                 value: uploadProgress > 0 ? uploadProgress : null,
               ),
-            )
+            ),
         ],
       ),
       body: Padding(
