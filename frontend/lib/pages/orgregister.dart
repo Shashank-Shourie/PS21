@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import './Userpages/home_page.dart'; // Make sure this import path is correct
 
 Future<String> getLocalIP() async {
   for (var interface in await NetworkInterface.list()) {
@@ -31,7 +32,6 @@ class _AuthPageState extends State<AuthPage> {
   final TextEditingController nameController = TextEditingController();
 
   bool isRegistering = false;
-
   String? baseUrl;
 
   @override
@@ -41,14 +41,12 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> initializeBaseUrl() async {
-  final host = dotenv.env['BACKEND_URL']!;
-  setState(() {
-    // use HTTPS and no port
-    baseUrl = '$host/api/auth';
-    print('Base URL initialized: $baseUrl');
-  });
-}
-
+    final host = dotenv.env['BACKEND_URL']!;
+    setState(() {
+      baseUrl = '$host/api/auth';
+      print('Base URL initialized: $baseUrl');
+    });
+  }
 
   Future<void> register() async {
     if (baseUrl == null) return;
@@ -85,45 +83,43 @@ class _AuthPageState extends State<AuthPage> {
   Future<void> login() async {
     print('Calling: $baseUrl/login');
 
-  if (baseUrl == null) return;
+    if (baseUrl == null) return;
 
-  final response = await http.post(
-    Uri.parse('$baseUrl/login'),
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({
-      'email': emailController.text,
-      'password': passwordController.text,
-    }),
-  );
+    final response = await http.post(
+      Uri.parse('$baseUrl/login'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': emailController.text,
+        'password': passwordController.text,
+      }),
+    );
 
-  if (response.statusCode == 200) {
-    // safe to parse JSON
-    final data = jsonDecode(response.body);
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => AdminDashboard(
-          orgName: data['org'],
-          orgid: data['orgid']['_id'],
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder:
+              (_) => AdminDashboard(
+                orgName: data['org'],
+                orgid: data['orgid']['_id'],
+              ),
         ),
-      ),
-    );
-  } else {
-    // maybe the server sent plain text or an error JSON
-    String message;
-    try {
-      final errorData = jsonDecode(response.body);
-      message = errorData['error'] ?? response.body;
-    } catch (_) {
-      message = response.body;  // raw text like "Not Found"
+      );
+    } else {
+      String message;
+      try {
+        final errorData = jsonDecode(response.body);
+        message = errorData['error'] ?? response.body;
+      } catch (_) {
+        message = response.body;
+      }
+      print('Login failed (${response.statusCode}): $message');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Login failed: $message')));
     }
-    print('Login failed (${response.statusCode}): $message');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Login failed: $message')),
-    );
   }
-}
-
 
   Widget buildToggleButtons() {
     return Container(
@@ -268,6 +264,25 @@ class _AuthPageState extends State<AuthPage> {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 24),
+
+                /// 👇 "Continue as User" button
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => HomePage()),
+                    );
+                  },
+                  child: Text(
+                    'Continue as User',
+                    style: TextStyle(
+                      color: Colors.deepPurple,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
                 ),
