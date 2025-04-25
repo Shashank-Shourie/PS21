@@ -4,6 +4,7 @@ import 'tgcet_page.dart';
 import 'management_page.dart';
 import 'others_page.dart';
 import 'account_settings_page.dart';
+import '../orgregister.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -100,12 +101,14 @@ class HomePage extends StatelessWidget {
                       _drawerTile(Icons.mail_outline, 'Contact us', () {}),
                       _drawerTile(Icons.info_outline, 'About us', () {}),
                       _drawerTile(Icons.settings, 'Settings', () {}),
-                      _drawerTile(
-                        Icons.logout,
-                        'Log out',
-                        () {},
-                        isLogout: true,
-                      ),
+                      _drawerTile(Icons.logout, 'Log out', () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder:
+                                (context) => AuthPage(), // Navigate to AuthPage
+                          ),
+                        );
+                      }, isLogout: true),
                     ],
                   ),
                 ),

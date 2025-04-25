@@ -2,7 +2,8 @@
 import 'package:flutter/material.dart';
 import 'createform.dart';
 import 'orgregister.dart';
-import 'account_page.dart'; // Import the account settings page
+import 'account_page.dart';
+import 'addnewmember.dart'; // Import the account settings page
 
 class AdminDashboard extends StatefulWidget {
   final String orgName;
@@ -122,7 +123,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     children: [
                       _drawerTile(Icons.person_add, 'Add New Member', () {
-                        // TODO: Navigate to Add New Member Page
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => NewAdmissionPage(),
+                          ),
+                        );
                       }),
                       _drawerTile(Icons.logout, 'Logout', () {
                         Navigator.pushReplacement(
@@ -220,18 +226,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class AuthPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Authentication Page')),
-      body: const Center(
-        child: Text('This is a placeholder for the authentication page.'),
       ),
     );
   }
