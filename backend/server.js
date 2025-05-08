@@ -1,24 +1,29 @@
-const express = require('express');
-// const multer = require('multer');
-const cors = require('cors');
-// const fs = require('fs');
-const connectDB = require('./config/db');
 require('dotenv').config();
-// const { TextractClient, AnalyzeDocumentCommand } = require('@aws-sdk/client-textract');
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const connectDB = require('./config/db');
+const authRoutes = require('./routes/auth');
+const textractRoutes = require('./routes/awstextract');
+const studentRoutes = require('./routes/student');
+const documentRoutes = require('./routes/document');
+const applicationRoutes = require('./routes/application');
 
 const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Database Connection
 connectDB();
 
-
-app.use(express.json());
-app.use(cors());
-app.use('/api/auth', require('./routes/auth'));
-app.use('/extract',require('./routes/awstextract'))
-app.use('user',require('./routes/createusers'));
-
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/textract', textractRoutes);
+app.use('/api/students', studentRoutes);
+app.use('/api/documents', documentRoutes);
+app.use('/api/applications', applicationRoutes);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`AWS Region: ${process.env.AWS_REGION || 'ap-south-1'}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -1,21 +1,58 @@
 import 'package:flutter/material.dart';
-// import '/pages/Userpages/home_page.dart';
-import 'pages/orgregister.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
+import 'pages/Auth/login_page.dart';
+import 'services/auth_service.dart';
+import 'services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(
-    fileName: "assets/.env",
-  ); // explicitly point to your .env if needed
-  runApp(const MyApp());
+  final prefs = await SharedPreferences.getInstance();
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<SharedPreferences>(create: (_) => prefs),
+        Provider<ApiService>(
+          create: (context) => ApiService(
+            client: Provider.of(context),
+            prefs: Provider.of(context),
+          ),
+        ),
+        ChangeNotifierProvider<AuthService>(
+          create: (context) => AuthService(
+            api: Provider.of(context),
+            prefs: Provider.of(context),
+          ),
+        ),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(debugShowCheckedModeBanner: false, home: AuthPage());
+    return MaterialApp(
+      title: 'Document Analyzer',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: Consumer<AuthService>(
+        builder: (context, auth, child) {
+          return auth.isAuthenticated
+              ? auth.user.role == 'admin'
+                  ? AdminDashboard()
+                  : AdmissionTypePage()
+              : LoginPage();
+        },
+      ),
+      routes: {
+        '/login': (context) => LoginPage(),
+        '/admission-type': (context) => AdmissionTypePage(),
+        // Add other routes here
+      },
+    );
   }
 }

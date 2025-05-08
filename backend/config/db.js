@@ -1,14 +1,17 @@
-// config/db.js
+// backend/db.js
+// MongoDB connection setup
 const mongoose = require('mongoose');
-require('dotenv').config();
 
 const connectDB = async () => {
   try {
-    // console.log(process.env.MONGODB_URI);
-    await mongoose.connect(process.env.MONGODB_URI);
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/admission_portal', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
     console.log('MongoDB Connected...');
   } catch (err) {
-    console.error('MongoDB connection error:', err.message);
+    console.error(err.message);
+    // Exit process with failure
     process.exit(1);
   }
 };

@@ -1,30 +1,25 @@
 const mongoose = require('mongoose');
-const Organization = require('./Organization');
+const bcrypt = require('bcryptjs');
 
 const UserSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: true
-    },
-    password: {
-        type: String,
-        required: true
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    submitted: {
-        type: Boolean,
-        required: true,
-        default: false
-    },
-    Organization: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: Organization,
-        required: true
-    }
-})
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  phone: { type: String, required: true },
+  role: { type: String, enum: ['student', 'admin'], required: true },
+  admissionType: { 
+    type: String, 
+    enum: ['TGCET', 'Management', 'JEE', 'NRI'],
+    required: function() { return this.role === 'student'; }
+  },
+  isVerified: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }
+});
+
+UserSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
 
 module.exports = mongoose.model('User', UserSchema);
