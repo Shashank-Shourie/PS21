@@ -1,232 +1,320 @@
-// admindashboard.dart
 import 'package:flutter/material.dart';
-import 'createform.dart';
-import 'orgregister.dart';
-import 'account_page.dart';
-import 'addnewmember.dart'; // Import the account settings page
+import 'studentsListpage.dart';
+import 'addnewmember.dart';
+
+void main() => runApp(AdminApp());
+
+class AdminApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Admin Dashboard',
+      theme: ThemeData(
+        primarySwatch: Colors.indigo,
+        scaffoldBackgroundColor: Colors.grey[100],
+        textTheme: TextTheme(
+          bodyMedium: TextStyle(color: Colors.black87),
+          titleLarge: TextStyle(
+            color: Colors.indigo[900],
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.indigo,
+          iconTheme: IconThemeData(color: Colors.white),
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.indigo,
+            foregroundColor: Colors.white,
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            textStyle: TextStyle(fontSize: 18),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            minimumSize: Size(200, 60),
+          ),
+        ),
+        listTileTheme: ListTileThemeData(
+          iconColor: Colors.indigo,
+          textColor: Colors.black87,
+        ),
+      ),
+      home: AdminDashboard(),
+    );
+  }
+}
 
 class AdminDashboard extends StatefulWidget {
-  final String orgName;
-  final String orgid;
-  const AdminDashboard({super.key, required this.orgName, required this.orgid});
-
   @override
-  State<AdminDashboard> createState() => _AdminDashboardState();
+  _AdminDashboardState createState() => _AdminDashboardState();
 }
 
 class _AdminDashboardState extends State<AdminDashboard> {
-  void _showAccountDetails(BuildContext context) {
+  void _navigateToStudentList(String admissionType) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const AdminAccountSettingsPage()),
+      MaterialPageRoute(
+        builder: (context) => StudentListPage(admissionType: admissionType),
+      ),
+    );
+  }
+
+  void _showAccountDetails() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            title: Text(
+              "Account Details",
+              style: TextStyle(
+                color: Colors.indigo[900],
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            content: Container(
+              // Added Container to limit the width
+              constraints: BoxConstraints(
+                maxWidth: 400,
+              ), // Limit max width of dialog
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        children: [
+                          Icon(Icons.account_circle, color: Colors.indigo[900]),
+                          SizedBox(width: 8),
+                          Expanded(
+                            // Added Expanded to make the text wrap
+                            child: Text(
+                              "Admin: Manideep Reddy",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        children: [
+                          Icon(Icons.business, color: Colors.indigo[900]),
+                          SizedBox(width: 8),
+                          Expanded(
+                            // Added Expanded to make the text wrap
+                            child: Text(
+                              "Organisation: YourOrg Pvt Ltd",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        children: [
+                          Icon(Icons.email, color: Colors.indigo[900]),
+                          SizedBox(width: 8),
+                          Expanded(
+                            // Added Expanded to make the text wrap
+                            child: Text(
+                              "Email: admin@yourorg.com",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _showChangePasswordDialog();
+                },
+                child: Text(
+                  "Change Password",
+                  style: TextStyle(color: Colors.indigo[900]),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  "Close",
+                  style: TextStyle(color: Colors.indigo[900]),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _showChangePasswordDialog() {
+    final _oldController = TextEditingController();
+    final _newController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text("Change Password"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _oldController,
+                  obscureText: true,
+                  decoration: InputDecoration(labelText: "Old Password"),
+                ),
+                TextField(
+                  controller: _newController,
+                  obscureText: true,
+                  decoration: InputDecoration(labelText: "New Password"),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        "Password change feature is not yet implemented.",
+                      ),
+                    ),
+                  );
+                },
+                child: Text("Submit"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text("Cancel"),
+              ),
+            ],
+          ),
+    );
+  }
+
+  Widget _buildSidebar() {
+    return Drawer(
+      child: ListView(
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(color: Colors.indigo),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Admin Panel",
+                  style: TextStyle(color: Colors.white, fontSize: 24),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  "YourOrg Pvt Ltd",
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.person_add),
+            title: Text("Add New Member"),
+            onTap: () {},
+          ),
+          Divider(),
+          ListTile(
+            leading: Icon(Icons.settings),
+            title: Text("Settings"),
+            onTap: () => Navigator.pop(context),
+          ),
+          ListTile(
+            leading: Icon(Icons.logout),
+            title: Text("Logout"),
+            onTap: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMainOptions() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildOptionButton(
+            'TGCET',
+            Icons.school,
+            () => _navigateToStudentList('TGCET'),
+          ),
+          SizedBox(height: 20),
+          _buildOptionButton(
+            'ECET',
+            Icons.book,
+            () => _navigateToStudentList('ECET'),
+          ),
+          SizedBox(height: 20),
+          _buildOptionButton(
+            'OTHERS',
+            Icons.more_horiz,
+            () => _navigateToStudentList('OTHERS'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptionButton(String title, IconData icon, VoidCallback onTap) {
+    return ElevatedButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon),
+      label: Text(title),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(84),
-        child: AppBar(
-          backgroundColor: Colors.blue.shade900,
-          title: Text(
-            widget.orgName,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 22,
-              height: 1.3,
-            ),
+      drawer: _buildSidebar(),
+      appBar: AppBar(
+        title: Text("Organisation Name"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.account_circle),
+            onPressed: _showAccountDetails,
           ),
-          centerTitle: true,
-          leading: Builder(
-            builder:
-                (context) => IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.white),
-                  onPressed: () => Scaffold.of(context).openDrawer(),
-                ),
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: IconButton(
-                icon: const Icon(
-                  Icons.account_circle,
-                  color: Colors.white,
-                  size: 30,
-                ),
-                onPressed: () {
-                  _showAccountDetails(context);
-                },
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
-      drawer: Drawer(
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(bottomRight: Radius.circular(40)),
-        ),
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF4FC3F7), Color(0xFF0288D1)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 40,
-                    horizontal: 20,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const CircleAvatar(
-                        radius: 30,
-                        backgroundColor: Colors.white,
-                        child: Icon(
-                          Icons.admin_panel_settings,
-                          size: 30,
-                          color: Colors.blue,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Admin Dashboard',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        widget.orgName,
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Divider(color: Colors.white70, thickness: 1),
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    children: [
-                      _drawerTile(Icons.person_add, 'Add New Member', () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => NewAdmissionPage(),
-                          ),
-                        );
-                      }),
-                      _drawerTile(Icons.logout, 'Logout', () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => AuthPage()),
-                        );
-                      }, isLogout: true),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            _buildMenuCard(
-              context,
-              icon: Icons.add_box_outlined,
-              title: "Create Form",
-              page: const CreateForm(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  static Widget _drawerTile(
-    IconData icon,
-    String title,
-    VoidCallback onTap, {
-    bool isLogout = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: ListTile(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        tileColor: isLogout ? Colors.red.shade600 : const Color(0xFF171717),
-        leading: Icon(
-          icon,
-          color: isLogout ? const Color(0xFFFF0000) : Colors.white,
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: isLogout ? const Color(0xFFFF0000) : Colors.white,
-            fontSize: 16,
-          ),
-        ),
-        onTap: onTap,
-        hoverColor: Colors.white24,
-        splashColor: Colors.white30,
-      ),
-    );
-  }
-
-  Widget _buildMenuCard(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required Widget page,
-  }) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => page),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-          child: Row(
-            children: [
-              Icon(icon, color: Colors.blue.shade900, size: 28),
-              const SizedBox(width: 16),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const Spacer(),
-              const Icon(Icons.arrow_forward_ios, size: 16),
-            ],
-          ),
-        ),
-      ),
+      body: _buildMainOptions(),
     );
   }
 }

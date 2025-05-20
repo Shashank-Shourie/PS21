@@ -68,9 +68,9 @@ class _AuthPageState extends State<AuthPage> {
         context,
         MaterialPageRoute(
           builder:
-              (context) => AdminDashboard(
-                orgName: orgController.text,
-                orgid: responseData['orgid']['_id'],
+              (context) => AdminApp(
+                // orgName: orgController.text,
+                // orgid: responseData['orgid']['_id'],
               ),
         ),
         (Route<dynamic> route) => false,
@@ -100,9 +100,9 @@ class _AuthPageState extends State<AuthPage> {
         context,
         MaterialPageRoute(
           builder:
-              (_) => AdminDashboard(
-                orgName: data['org'],
-                orgid: data['orgid']['_id'],
+              (_) => AdminApp(
+                // orgName: data['org'],
+                // orgid: data['orgid']['_id'],
               ),
         ),
       );
