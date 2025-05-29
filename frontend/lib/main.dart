@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'pages/login_page.dart'; // Import the login_page.dart
+import 'pages/login_page.dart'; // import the actual AuthPage here
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: "assets/.env");  // Explicitly load .env file if necessary
-  print("APP initialized");
+  //await dotenv.load(fileName: "assets/.env"); // optional if used
   runApp(const MyApp());
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -17,7 +15,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: AuthPage(),  // Set the home to AuthPage which is inside login_page.dart
+      home: AuthPage(), // this should work now
     );
   }
 }
