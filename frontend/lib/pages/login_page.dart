@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'Student/student_dashboard.dart';
+import 'admindashboard.dart';
 
 class AuthPage extends StatefulWidget {
   @override
@@ -37,7 +39,7 @@ class _AuthPageState extends State<AuthPage> {
 
   @override
   Widget build(BuildContext context) {
-    print("AuthPage build() called"); 
+    print("AuthPage build()  not called");
     return Scaffold(
       backgroundColor: Colors.deepPurple.shade50,
       body: Center(
@@ -77,8 +79,11 @@ class _AuthPageState extends State<AuthPage> {
                                 labelText: 'Organisation Name',
                                 border: OutlineInputBorder(),
                               ),
-                              validator: (value) =>
-                                  value!.isEmpty ? 'Enter organisation name' : null,
+                              validator:
+                                  (value) =>
+                                      value!.isEmpty
+                                          ? 'Enter organisation name'
+                                          : null,
                             ),
                             SizedBox(height: 16),
                             TextFormField(
@@ -87,8 +92,9 @@ class _AuthPageState extends State<AuthPage> {
                                 labelText: 'Person Name',
                                 border: OutlineInputBorder(),
                               ),
-                              validator: (value) =>
-                                  value!.isEmpty ? 'Enter your name' : null,
+                              validator:
+                                  (value) =>
+                                      value!.isEmpty ? 'Enter your name' : null,
                             ),
                             SizedBox(height: 16),
                           ],
@@ -99,7 +105,8 @@ class _AuthPageState extends State<AuthPage> {
                           labelText: 'Email',
                           border: OutlineInputBorder(),
                         ),
-                        validator: (value) => value!.isEmpty ? 'Enter email' : null,
+                        validator:
+                            (value) => value!.isEmpty ? 'Enter email' : null,
                       ),
                       SizedBox(height: 16),
                       TextFormField(
@@ -109,8 +116,11 @@ class _AuthPageState extends State<AuthPage> {
                           labelText: 'Password',
                           border: OutlineInputBorder(),
                         ),
-                        validator: (value) =>
-                            value!.length < 6 ? 'Minimum 6 characters' : null,
+                        validator:
+                            (value) =>
+                                value!.length < 6
+                                    ? 'Minimum 6 characters'
+                                    : null,
                       ),
                       SizedBox(height: 24),
                       ElevatedButton(

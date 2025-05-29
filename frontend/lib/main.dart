@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'pages/login_page.dart'; // import the actual AuthPage here
+import './pages/orgregister.dart'; // import the org registration page if needed
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  //await dotenv.load(fileName: "assets/.env"); // optional if used
+  await dotenv.load(); // optional if used
   runApp(const MyApp());
 }
 

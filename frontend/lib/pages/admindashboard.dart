@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'studentsListpage.dart';
 import 'addnewmember.dart';
 
-void main() => runApp(AdminApp());
-
 class AdminApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'admindashoard.dart';
+import 'admindashboard.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -203,7 +203,7 @@ class _AuthPageState extends State<AuthPage> {
     if (baseUrl == null) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-
+    print('Building AuthPage with baseUrl: $baseUrl');
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
