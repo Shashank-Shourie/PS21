@@ -1,11 +1,30 @@
 import 'package:flutter/material.dart';
-import 'upload_pdf_page.dart'; // Import the Upload Files page
+import 'upload_pdf_page.dart';
+import 'upload_pages/aadhar_page.dart';
+import 'upload_pages/bonafide_page.dart';
+import 'upload_pages/inter_memo_page.dart';
+import 'upload_pages/jee_hall_ticket_page.dart';
+import 'upload_pages/jee_percentile_page.dart';
+import 'upload_pages/study_certificates_page.dart';
+import 'upload_pages/tc_page.dart';
+import 'upload_pages/tenth_memo_page.dart';
 
 class JeePage extends StatelessWidget {
   const JeePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final List<Map<String, dynamic>> jeeDocuments = [
+      {"title": "Aadhar card", "page": const AadharPage()},
+      {"title": "Inter Memo", "page": const InterMemoPage()},
+      {"title": "TC", "page": const TCPage()},
+      {"title": "Study Certificates (6th - 12th)", "page": const StudyCertificatesPage()},
+      {"title": "Bonafide", "page": const BonafidePage()},
+      {"title": "10th memo", "page": const TenthMemoPage()},
+      {"title": "JEE hall ticket", "page": const JeeHallTicketPage()},
+      {"title": "JEE percentile document", "page": const JeePercentilePage()},
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -46,40 +65,38 @@ class JeePage extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: ListView.separated(
-                    itemCount:
-                        const [
-                          "Aadhar card",
-                          "Inter Memo",
-                          "TC",
-                          "Study Certificates (6th - 12th)",
-                          "Bonafide",
-                          "10th memo",
-                          "JEE hall ticket",
-                          "JEE percentile document",
-                        ].length,
-                    separatorBuilder:
-                        (context, index) => const Divider(
-                          color: Colors.grey,
-                          indent: 10,
-                          endIndent: 10,
-                        ),
+                    itemCount: jeeDocuments.length,
+                    separatorBuilder: (context, index) => const Divider(
+                      color: Colors.grey,
+                      indent: 10,
+                      endIndent: 10,
+                    ),
                     itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.description_outlined,
-                              color: Colors.lightBlueAccent,
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                "• ${const ["Aadhar card", "Inter Memo", "TC", "Study Certificates (6th - 12th)", "Bonafide", "10th memo", "Income Certificate", "Eamcet hall ticket", "Eamcet Rank document"][index]}",
-                                style: const TextStyle(fontSize: 16),
+                      final doc = jeeDocuments[index];
+                      return InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => doc["page"]),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.description_outlined,
+                                color: Colors.lightBlueAccent,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  "• ${doc["title"]}",
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
