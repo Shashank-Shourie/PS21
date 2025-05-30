@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'studentsListpage.dart';
 import 'addnewmember.dart';
 
-void main() => runApp(AdminApp());
-
 class AdminApp extends StatelessWidget {
+  final String orgName;
+  final String orgId;
+
+  AdminApp({required this.orgName, required this.orgId});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -46,22 +49,34 @@ class AdminApp extends StatelessWidget {
           textColor: Colors.black87,
         ),
       ),
-      home: AdminDashboard(),
+      home: AdminDashboard(orgName: orgName, orgId: orgId),
     );
   }
 }
 
+
 class AdminDashboard extends StatefulWidget {
+  final String orgName;
+  final String orgId;
+
+  AdminDashboard({required this.orgName, required this.orgId});
+
   @override
   _AdminDashboardState createState() => _AdminDashboardState();
 }
+
 
 class _AdminDashboardState extends State<AdminDashboard> {
   void _navigateToStudentList(String admissionType) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => StudentListPage(admissionType: admissionType),
+        builder: (context) => StudentListPage(
+        admissionType: admissionType,
+        orgId: widget.orgId,
+        orgName: widget.orgName,
+),
+
       ),
     );
   }
@@ -121,7 +136,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                           Expanded(
                             // Added Expanded to make the text wrap
                             child: Text(
-                              "Organisation: YourOrg Pvt Ltd",
+                              "Organisation: ${widget.orgName}",
                               style: TextStyle(
                                 fontSize: 16,
                                 color: Colors.black87,
@@ -239,7 +254,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 ),
                 SizedBox(height: 8),
                 Text(
-                  "YourOrg Pvt Ltd",
+                  "Organisation: ${widget.orgName}",
                   style: TextStyle(color: Colors.white70),
                 ),
               ],
@@ -248,7 +263,16 @@ class _AdminDashboardState extends State<AdminDashboard> {
           ListTile(
             leading: Icon(Icons.person_add),
             title: Text("Add New Member"),
-            onTap: () {},
+            onTap: () => Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => StudentListPage(
+      admissionType: 'TGCET',
+      orgId: widget.orgId,
+      orgName: widget.orgName,
+    ),
+  ),
+),
           ),
           Divider(),
           ListTile(

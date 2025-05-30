@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'admindashoard.dart'; // Assuming this file exists
+import 'admindashboard.dart'; // Assuming this file exists
 
 class NewAdmissionPage extends StatefulWidget {
   @override

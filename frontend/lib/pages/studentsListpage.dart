@@ -1,232 +1,114 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-
-class Student {
-  final String name;
-  final String email;
-  final String phone;
-  final String password;
-  final bool submitted;
-
-  Student({
-    required this.name,
-    required this.email,
-    required this.phone,
-    required this.password,
-    this.submitted = true,
-  });
-}
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class StudentListPage extends StatefulWidget {
   final String admissionType;
-
-  StudentListPage({required this.admissionType});
+  final String orgId;
+  final String orgName;
+  StudentListPage({required this.admissionType,required this.orgId, required this.orgName});
 
   @override
   _StudentListPageState createState() => _StudentListPageState();
 }
 
 class _StudentListPageState extends State<StudentListPage> {
-  final Map<String, List<Student>> studentsByType = {
-    'TGCET': [
-      Student(
-        name: 'Arjun',
-        email: 'arjun@example.com',
-        phone: '1234567890',
-        password: 'pass1',
-        submitted: true,
-      ),
-      Student(
-        name: 'Sita',
-        email: 'sita@example.com',
-        phone: '9998887770',
-        password: 'pass2',
-        submitted: false,
-      ),
-    ],
-    'ECET': [
-      Student(
-        name: 'Ravi',
-        email: 'ravi@example.com',
-        phone: '8887776660',
-        password: 'pass3',
-        submitted: true,
-      ),
-    ],
-    'OTHERS': [],
-  };
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _organizationController = TextEditingController();
 
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
+  List<dynamic> users = [];
 
-  bool showSubmitted = true;
+  final String? backendUrl = dotenv.env['BACKEND_URL'];
 
-  void _showAddStudentDialog() {
+  Future<void> createUser() async {
+  final response = await http.post(
+    Uri.parse('$backendUrl/user/userregister'),
+    headers: {"Content-Type": "application/json"},
+    body: json.encode({
+      "name": _nameController.text,
+      "email": _emailController.text,
+      "organizationId": widget.orgId,
+    }),
+  );
+
+  if (response.statusCode == 201) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('User created')));
     _nameController.clear();
     _emailController.clear();
-    _phoneController.clear();
-    _passwordController.clear();
+    _organizationController.clear();
+    fetchUsers(); // Refresh the list
+  } else {
+    // Decode the backend error response and show it
+    final errorData = json.decode(response.body);
+    print('Backend Error: $errorData'); // Logs to console
 
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Add New Student'),
-            content: SingleChildScrollView(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: InputDecoration(labelText: 'Name'),
-                      validator:
-                          (val) =>
-                              val == null || val.isEmpty ? 'Enter name' : null,
-                    ),
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: InputDecoration(labelText: 'Email'),
-                      validator:
-                          (val) =>
-                              val == null || !val.contains('@')
-                                  ? 'Enter valid email'
-                                  : null,
-                    ),
-                    TextFormField(
-                      controller: _phoneController,
-                      decoration: InputDecoration(labelText: 'Phone'),
-                      keyboardType: TextInputType.phone,
-                      validator:
-                          (val) =>
-                              val == null || val.length < 10
-                                  ? 'Enter valid phone'
-                                  : null,
-                    ),
-                    TextFormField(
-                      controller: _passwordController,
-                      decoration: InputDecoration(labelText: 'Password'),
-                      obscureText: true,
-                      validator:
-                          (val) =>
-                              val == null || val.length < 4
-                                  ? 'Enter min 4 characters'
-                                  : null,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    setState(() {
-                      studentsByType[widget.admissionType]?.add(
-                        Student(
-                          name: _nameController.text,
-                          email: _emailController.text,
-                          phone: _phoneController.text,
-                          password: _passwordController.text,
-                          submitted: false, // default
-                        ),
-                      );
-                    });
-                    Navigator.of(context).pop();
-                  }
-                },
-                child: Text('Add'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('Cancel'),
-              ),
-            ],
-          ),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to create user: ${errorData['error'] ?? 'Unknown error'}')),
     );
   }
+}
 
-  Widget _buildStudentCard(Student student) {
-    return Card(
-      elevation: 3,
-      margin: EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: student.submitted ? Colors.green : Colors.orange,
-          child: Text(student.name[0], style: TextStyle(color: Colors.white)),
-        ),
-        title: Text(student.name),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Email: ${student.email}"),
-            Text("Phone: ${student.phone}"),
-            Text("Submitted: ${student.submitted ? 'Yes' : 'No'}"),
-          ],
-        ),
-      ),
-    );
+
+  Future<void> fetchUsers() async {
+    final response = await http.get(Uri.parse('$backendUrl/users'));
+
+    if (response.statusCode == 201) {
+      setState(() {
+        // Optionally filter users by admissionType if it's part of the user data
+        users =
+            json.decode(response.body).where((user) {
+              return user['admissionType'] == widget.admissionType;
+            }).toList();
+      });
+    } else {
+      print("Error fetching users");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUsers();
   }
 
   @override
   Widget build(BuildContext context) {
-    final students = studentsByType[widget.admissionType] ?? [];
-    final displayedStudents =
-        students.where((s) => s.submitted == showSubmitted).toList();
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text("${widget.admissionType} Students"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: Text('${widget.admissionType} Students')),
       body: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: EdgeInsets.all(16),
         child: Column(
           children: [
-            ElevatedButton.icon(
-              onPressed: _showAddStudentDialog,
-              icon: Icon(Icons.person_add),
-              label: Text("Add New Student"),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 48),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(labelText: 'Name'),
             ),
-            SizedBox(height: 12),
-            ToggleButtons(
-              isSelected: [showSubmitted, !showSubmitted],
-              onPressed: (index) {
-                setState(() {
-                  showSubmitted = index == 0;
-                });
-              },
-              borderRadius: BorderRadius.circular(10),
-              selectedColor: Colors.white,
-              fillColor: Colors.indigo,
-              color: Colors.indigo,
-              constraints: BoxConstraints(minWidth: 100, minHeight: 40),
-              children: [Text("Submitted"), Text("Pending")],
+            TextField(
+              controller: _emailController,
+              decoration: InputDecoration(labelText: 'Email'),
             ),
-            SizedBox(height: 12),
+            TextField(
+              controller: _organizationController,
+              decoration: InputDecoration(labelText: 'Organization'),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(onPressed: createUser, child: Text('Create User')),
+            Divider(height: 30),
             Expanded(
-              child:
-                  displayedStudents.isEmpty
-                      ? Center(
-                        child: Text(
-                          "No ${showSubmitted ? 'submitted' : 'pending'} students.",
-                        ),
-                      )
-                      : ListView.builder(
-                        itemCount: displayedStudents.length,
-                        itemBuilder:
-                            (context, index) =>
-                                _buildStudentCard(displayedStudents[index]),
-                      ),
+              child: ListView.builder(
+                itemCount: users.length,
+                itemBuilder: (context, index) {
+                  final user = users[index];
+                  return ListTile(
+                    title: Text(user['name']),
+                    subtitle: Text(user['email']),
+                  );
+                },
+              ),
             ),
           ],
         ),

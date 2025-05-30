@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Organization = require('../models/Organization.js');
 const Member = require('../models/Members.js');
+const User = require('../models/User.js');
 
 const router = express.Router();
 
@@ -43,6 +44,35 @@ router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         const member = await Member.findOne({ email }).populate('Organization');
+        if (!member) {
+            return res.status(400).json({ error: 'Invalid credentials' });
+        }
+        const isMatch = await bcrypt.compare(password, member.password);
+        if (!isMatch) {
+            return res.status(400).json({ error: 'Invalid credentials' });
+        }
+        // Generate token
+        const token = jwt.sign(
+            { id: member._id },
+            'your_jwt_secret',
+            { expiresIn: '1h' }
+        );
+        res.status(200).json({ 
+            message: 'Login successful',
+            token,
+            org: member.Organization.OrganizationName,
+            orgid: member.Organization
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+router.post('/slogin', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const member = await User.findOne({ email }).populate('Organization');
         if (!member) {
             return res.status(400).json({ error: 'Invalid credentials' });
         }

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'admindashoard.dart';
+import 'admindashboard.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import './Userpages/home_page.dart'; // Make sure this import path is correct
+// import './Userpages/home_page.dart'; // Make sure this import path is correct
+import 'login_page.dart';
 
 Future<String> getLocalIP() async {
   for (var interface in await NetworkInterface.list()) {
@@ -64,16 +65,13 @@ class _AuthPageState extends State<AuthPage> {
 
     final responseData = jsonDecode(response.body);
     if (response.statusCode == 201) {
-      Navigator.pushAndRemoveUntil(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder:
-              (context) => AdminApp(
-                // orgName: orgController.text,
-                // orgid: responseData['orgid']['_id'],
-              ),
+              (context) =>
+                  AdminApp(orgName: responseData['member'], orgId: responseData['orgid']),
         ),
-        (Route<dynamic> route) => false,
       );
     } else {
       print('Registration failed: ${responseData['error']}');
@@ -100,10 +98,8 @@ class _AuthPageState extends State<AuthPage> {
         context,
         MaterialPageRoute(
           builder:
-              (_) => AdminApp(
-                // orgName: data['org'],
-                // orgid: data['orgid']['_id'],
-              ),
+              (context) =>
+                  AdminApp(orgName: data['member'], orgId: data['orgid']),
         ),
       );
     } else {
@@ -203,7 +199,7 @@ class _AuthPageState extends State<AuthPage> {
     if (baseUrl == null) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-
+    print('Building AuthPage with baseUrl: $baseUrl');
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -274,7 +270,7 @@ class _AuthPageState extends State<AuthPage> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => HomePage()),
+                      MaterialPageRoute(builder: (context) => LoginPage()),
                     );
                   },
                   child: Text(
