@@ -44,12 +44,12 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> login() async {
-    print('Calling: $baseUrl/slogiin');
+    print('Calling: $baseUrl/user/login');
 
     if (baseUrl == null) return;
 
     final response = await http.post(
-      Uri.parse('$baseUrl/slogiin'),
+      Uri.parse('$baseUrl/user/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'email': emailController.text,
