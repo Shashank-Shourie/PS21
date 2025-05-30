@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-
 class StudentListPage extends StatefulWidget {
   final String admissionType;
 
@@ -23,39 +22,46 @@ class _StudentListPageState extends State<StudentListPage> {
   final String? backendUrl = dotenv.env['BACKEND_URL'];
 
   Future<void> createUser() async {
-    final response = await http.post(
-      Uri.parse('$backendUrl/user/userregister'),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode({
-        "_name": _nameController.text,
-        "_email": _emailController.text,
-        "_organization": _organizationController.text,
-        "admissionType": widget.admissionType, // include admission type
-      }),
-    );
+  final response = await http.post(
+    Uri.parse('$backendUrl/user/userregister'),
+    headers: {"Content-Type": "application/json"},
+    body: json.encode({
+      "name": _nameController.text,
+      "email": _emailController.text,
+      "organizationName": _organizationController.text,
+    }),
+  );
 
-    if (response.statusCode == 201) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('User created')));
-      _nameController.clear();
-      _emailController.clear();
-      _organizationController.clear();
-      fetchUsers(); // Refresh the list
-    } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Failed to create user')));
-    }
+  if (response.statusCode == 201) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('User created')));
+    _nameController.clear();
+    _emailController.clear();
+    _organizationController.clear();
+    fetchUsers(); // Refresh the list
+  } else {
+    // Decode the backend error response and show it
+    final errorData = json.decode(response.body);
+    print('Backend Error: $errorData'); // Logs to console
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to create user: ${errorData['error'] ?? 'Unknown error'}')),
+    );
   }
+}
+
 
   Future<void> fetchUsers() async {
     final response = await http.get(Uri.parse('$backendUrl/users'));
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 201) {
       setState(() {
         // Optionally filter users by admissionType if it's part of the user data
-        users = json.decode(response.body).where((user) {
-          return user['admissionType'] == widget.admissionType;
-        }).toList();
+        users =
+            json.decode(response.body).where((user) {
+              return user['admissionType'] == widget.admissionType;
+            }).toList();
       });
     } else {
       print("Error fetching users");

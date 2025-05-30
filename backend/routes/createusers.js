@@ -13,30 +13,29 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: PROCESS.env.EMAIL_USER, // use environment variables in production
-        pass: PROCESS.env.EMAIL_PASS,    // use an App Password if using Gmail
+        user: process.env.EMAIL_USER, // use environment variables in production
+        pass: AudioProcessingEvent.env.EMAIL_PASS,    // use an App Password if using Gmail
     }
 });
 
 
 router.post('/userregister', async (req, res) => {
     try {
-        const { _name, _email, _organization } = req.body;
-
-        const organization = await Organization.findOne({ _organization });
+        const { name, email, organizationName } = req.body;
+        const organization = await Organization.findOne({ name: organizationName });
         if (!organization) return res.status(404).json({ error: 'Organization not found' });
-
         const orgid = organization._id;
         const password = 'default';
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newuser = new User({
-            name: _name,
+            name,
             password: hashedPassword,
-            email: _email,
-            Organization: orgid,
-        });
+            email,
+            Organization: organization._id,
+}       );
+
 
         await newuser.save();
 
@@ -60,7 +59,7 @@ router.post('/userregister', async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Server error. User not created, try again' });
+        res.status(500).json({ error: error });
     }
 });
 
