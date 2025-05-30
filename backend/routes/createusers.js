@@ -14,7 +14,8 @@ const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: process.env.EMAIL_USER, // use environment variables in production
-        pass: AudioProcessingEvent.env.EMAIL_PASS,    // use an App Password if using Gmail
+        pass: process.env.EMAIL_PASS,
+    // use an App Password if using Gmail
     }
 });
 
