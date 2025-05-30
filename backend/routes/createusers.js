@@ -21,10 +21,9 @@ const transporter = nodemailer.createTransport({
 
 router.post('/userregister', async (req, res) => {
     try {
-        const { name, email, organizationName } = req.body;
-        const organization = await Organization.findOne({ name: organizationName });
+        const { name, email, organizationId } = req.body;
+        const organization = await Organization.findOne({ _id: organizationId });
         if (!organization) return res.status(404).json({ error: 'Organization not found' });
-        const orgid = organization._id;
         const password = 'default';
 
         const hashedPassword = await bcrypt.hash(password, 10);

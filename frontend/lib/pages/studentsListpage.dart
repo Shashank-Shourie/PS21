@@ -5,8 +5,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class StudentListPage extends StatefulWidget {
   final String admissionType;
-
-  StudentListPage({required this.admissionType});
+  final String orgId;
+  final String orgName;
+  StudentListPage({required this.admissionType,required this.orgId, required this.orgName});
 
   @override
   _StudentListPageState createState() => _StudentListPageState();
@@ -28,7 +29,7 @@ class _StudentListPageState extends State<StudentListPage> {
     body: json.encode({
       "name": _nameController.text,
       "email": _emailController.text,
-      "organizationName": _organizationController.text,
+      "organizationId": widget.orgId,
     }),
   );
 

@@ -65,16 +65,13 @@ class _AuthPageState extends State<AuthPage> {
 
     final responseData = jsonDecode(response.body);
     if (response.statusCode == 201) {
-      Navigator.pushAndRemoveUntil(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder:
-              (context) => AdminApp(
-                // orgName: orgController.text,
-                // orgid: responseData['orgid']['_id'],
-              ),
+              (context) =>
+                  AdminApp(orgName: responseData['member'], orgId: responseData['orgid']),
         ),
-        (Route<dynamic> route) => false,
       );
     } else {
       print('Registration failed: ${responseData['error']}');
@@ -101,10 +98,8 @@ class _AuthPageState extends State<AuthPage> {
         context,
         MaterialPageRoute(
           builder:
-              (_) => AdminApp(
-                // orgName: data['org'],
-                // orgid: data['orgid']['_id'],
-              ),
+              (context) =>
+                  AdminApp(orgName: data['member'], orgId: data['orgid']),
         ),
       );
     } else {
