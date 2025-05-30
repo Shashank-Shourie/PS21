@@ -246,7 +246,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
           ListTile(
             leading: Icon(Icons.person_add),
             title: Text("Add New Member"),
-            onTap: () {},
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => StudentListPage(admissionType: 'TGCET'),
+            ),),
           ),
           Divider(),
           ListTile(

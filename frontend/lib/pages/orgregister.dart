@@ -5,7 +5,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import './Userpages/home_page.dart'; // Make sure this import path is correct
+// import './Userpages/home_page.dart'; // Make sure this import path is correct
+import 'login_page.dart';
 
 Future<String> getLocalIP() async {
   for (var interface in await NetworkInterface.list()) {
@@ -274,7 +275,7 @@ class _AuthPageState extends State<AuthPage> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => HomePage()),
+                      MaterialPageRoute(builder: (context) => LoginPage()),
                     );
                   },
                   child: Text(

@@ -6,7 +6,9 @@ const connectDB = require('./config/db');
 require('dotenv').config();
 // const { TextractClient, AnalyzeDocumentCommand } = require('@aws-sdk/client-textract');
 
+require('dotenv').config();
 const app = express();
+
 connectDB();
 
 
@@ -14,7 +16,7 @@ app.use(express.json());
 app.use(cors());
 app.use('/api/auth', require('./routes/auth'));
 app.use('/extract',require('./routes/awstextract'))
-app.use('user',require('./routes/createusers'));
+app.use('/user',require('./routes/createusers'));
 
 
 const PORT = process.env.PORT || 5000;

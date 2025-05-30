@@ -1,157 +1,164 @@
 import 'package:flutter/material.dart';
-import 'Student/student_dashboard.dart';
-import 'admindashboard.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import './Student/student_dashboard.dart';
+// import './Userpages/home_page.dart'; // ✅ Replace with actual user homepage
 
-class AuthPage extends StatefulWidget {
-  @override
-  _AuthPageState createState() => _AuthPageState();
+Future<String> getLocalIP() async {
+  for (var interface in await NetworkInterface.list()) {
+    for (var addr in interface.addresses) {
+      if (addr.type == InternetAddressType.IPv4 &&
+          !addr.address.startsWith('127.') &&
+          !addr.address.startsWith('169.254.')) {
+        return addr.address;
+      }
+    }
+  }
+  return 'localhost';
 }
 
-class _AuthPageState extends State<AuthPage> {
-  bool isLogin = true; // Switch between login and registration forms
-  final _formKey = GlobalKey<FormState>();
+class LoginPage extends StatefulWidget {
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
 
-  // Controllers for text fields
+class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController orgController = TextEditingController();
-  final TextEditingController nameController = TextEditingController();
+  String? baseUrl;
 
-  // Toggle between login and register forms
-  void toggleForm() {
+  @override
+  void initState() {
+    super.initState();
+    initializeBaseUrl();
+  }
+
+  Future<void> initializeBaseUrl() async {
+    final host = dotenv.env['BACKEND_URL']!;
     setState(() {
-      isLogin = !isLogin;
+      baseUrl = '$host/api/auth';
+      print('Base URL initialized: $baseUrl');
     });
   }
 
-  // Submit the form
-  void submit() {
-    if (_formKey.currentState!.validate()) {
-      if (isLogin) {
-        print("Logging in with ${emailController.text}");
-      } else {
-        print(
-          "Registering: ${emailController.text}, Org: ${orgController.text}, Name: ${nameController.text}",
-        );
+  Future<void> login() async {
+    print('Calling: $baseUrl/slogiin');
+
+    if (baseUrl == null) return;
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/slogiin'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': emailController.text,
+        'password': passwordController.text,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => StudentApp()),
+      );
+    } else {
+      String message;
+      try {
+        final errorData = jsonDecode(response.body);
+        message = errorData['error'] ?? response.body;
+      } catch (_) {
+        message = response.body;
       }
+      print('Login failed (${response.statusCode}): $message');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Login failed: $message')));
     }
+  }
+
+  Widget buildTextField(
+    String label,
+    TextEditingController controller, {
+    bool obscure = false,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    print("AuthPage build()  not called");
+    if (baseUrl == null) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
-      backgroundColor: Colors.deepPurple.shade50,
-      body: Center(
+      backgroundColor: Colors.white,
+      body: SafeArea(
         child: SingleChildScrollView(
-          child: AnimatedContainer(
-            duration: Duration(milliseconds: 500),
-            padding: EdgeInsets.all(24),
-            width: 370,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [BoxShadow(blurRadius: 15, color: Colors.black12)],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  isLogin ? 'Welcome Back 👋' : 'Register your account 📝',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 36),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Student Login",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurpleAccent,
                 ),
-                SizedBox(height: 8),
-                Text(
-                  isLogin ? 'Login to continue' : 'Fill in the details below',
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                ),
-                SizedBox(height: 24),
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      if (!isLogin) // Show fields only when registering
-                        Column(
-                          children: [
-                            TextFormField(
-                              controller: orgController,
-                              decoration: InputDecoration(
-                                labelText: 'Organisation Name',
-                                border: OutlineInputBorder(),
-                              ),
-                              validator:
-                                  (value) =>
-                                      value!.isEmpty
-                                          ? 'Enter organisation name'
-                                          : null,
-                            ),
-                            SizedBox(height: 16),
-                            TextFormField(
-                              controller: nameController,
-                              decoration: InputDecoration(
-                                labelText: 'Person Name',
-                                border: OutlineInputBorder(),
-                              ),
-                              validator:
-                                  (value) =>
-                                      value!.isEmpty ? 'Enter your name' : null,
-                            ),
-                            SizedBox(height: 16),
-                          ],
-                        ),
-                      TextFormField(
-                        controller: emailController,
-                        decoration: InputDecoration(
-                          labelText: 'Email',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator:
-                            (value) => value!.isEmpty ? 'Enter email' : null,
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: passwordController,
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator:
-                            (value) =>
-                                value!.length < 6
-                                    ? 'Minimum 6 characters'
-                                    : null,
-                      ),
-                      SizedBox(height: 24),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: Size(double.infinity, 48),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          backgroundColor: Colors.deepPurple,
-                        ),
-                        onPressed: submit,
-                        child: Text(
-                          isLogin ? 'Login' : 'Register',
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      TextButton(
-                        onPressed: toggleForm,
-                        child: Text(
-                          isLogin
-                              ? "Don't have an account? Register"
-                              : "Already have an account? Login",
-                          style: TextStyle(color: Colors.deepPurple),
-                        ),
-                      ),
-                    ],
+              ),
+              SizedBox(height: 32),
+              buildTextField('Email', emailController),
+              SizedBox(height: 16),
+              buildTextField('Password', passwordController, obscure: true),
+              SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: login,
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 14),
+                  backgroundColor: Colors.deepPurpleAccent,
+                  foregroundColor: Colors.white,
+                  minimumSize: Size(double.infinity, 48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-              ],
-            ),
+                child: Text(
+                  'Login',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(height: 24),
+
+              /// 👇 "Continue as User" button
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StudentApp(),
+                    ), // 🔄 Your user page
+                  );
+                },
+                child: Text(
+                  'Continue as User',
+                  style: TextStyle(
+                    color: Colors.deepPurple,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
