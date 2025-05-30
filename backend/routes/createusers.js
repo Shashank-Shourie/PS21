@@ -15,10 +15,36 @@ const transporter = nodemailer.createTransport({
     auth: {
         user: process.env.EMAIL_USER, // use environment variables in production
         pass: process.env.EMAIL_PASS,
-    // use an App Password if using Gmail
+        // use an App Password if using Gmail
     }
 });
 
+router.post('/login',async(req,res)=>{
+    try{
+        const {email,password} = req.body;
+        const user = await User.findOne({email:email});
+        if (!user){
+          return res.status(400).json({ error: 'Invalid credentials' });
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ error: 'Invalid credentials' });
+        }
+        const token = jwt.sign(
+            { id: user._id },
+            'your_jwt_secret',
+            { expiresIn: '1h' }
+        );
+        res.status(200).json({ 
+            message: 'Login successful',
+            token,
+            userid:user._id
+        });
+    }catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error });
+    }
+});
 
 router.post('/userregister', async (req, res) => {
     try {
@@ -34,9 +60,7 @@ router.post('/userregister', async (req, res) => {
             password: hashedPassword,
             email,
             Organization: organization._id,
-}       );
-
-
+        });
         await newuser.save();
 
         // Send email with credentials
