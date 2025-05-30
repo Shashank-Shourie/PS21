@@ -66,7 +66,7 @@ router.post('/userregister', async (req, res) => {
         // Send email with credentials
         const mailOptions = {
             from: process.env.EMAIL_USER,
-            to: _email,
+            to: email,
             subject: 'Welcome to the Portal - Your Credentials',
             text: `Hello ${_name},\n\nYour account has been created.\n\nEmail: ${_email}\nPassword: ${password}\n\nPlease log in and change your password.\n\nThank you!`
         };
