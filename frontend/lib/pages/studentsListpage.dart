@@ -54,18 +54,23 @@ class _StudentListPageState extends State<StudentListPage> {
 
 
   Future<void> fetchUsers() async {
-    final response = await http.get(Uri.parse('$backendUrl/users'));
+    final response = await http.post(
+      Uri.parse('$backendUrl/users'),
+      headers: {"Content-Type": "application/json"},
+      body: json.encode({
+      "organizationId": widget.orgId,
+      }),
+    );
 
     if (response.statusCode == 201) {
       setState(() {
         // Optionally filter users by admissionType if it's part of the user data
         users =
-            json.decode(response.body).where((user) {
-              return user['admissionType'] == widget.admissionType;
-            }).toList();
+            json.decode(response.body).toList();
       });
     } else {
       print("Error fetching users");
+      print(response.body);
     }
   }
 

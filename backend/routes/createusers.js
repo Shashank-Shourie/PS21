@@ -87,13 +87,14 @@ router.post('/userregister', async (req, res) => {
     }
 });
 
-router.get('/users', async (req, res) => {
+router.post('/users', async (req, res) => {
     try {
-        const users = await User.find().populate('Organization');
+        const { organizationId } = req.body;
+        const users = await User.find({_id:organizationId});
         res.status(200).json(users);
     } catch (error) {
         console.log(error);
-        res.status(500).json({ error: 'Failed to fetch users' });
+        res.status(500).json({ error: error.message });
     }
 });
 
