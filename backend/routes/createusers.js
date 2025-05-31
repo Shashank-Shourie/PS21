@@ -68,7 +68,7 @@ router.post('/userregister', async (req, res) => {
             from: process.env.EMAIL_USER,
             to: email,
             subject: 'Welcome to the Portal - Your Credentials',
-            text: `Hello ${_name},\n\nYour account has been created.\n\nEmail: ${_email}\nPassword: ${password}\n\nPlease log in and change your password.\n\nThank you!`
+            text: `Hello ${name},\n\nYour account has been created.\n\nEmail: ${email}\nPassword: ${password}\n\nPlease log in and change your password.\n\nThank you!`
         };
 
         transporter.sendMail(mailOptions, (error, info) => {

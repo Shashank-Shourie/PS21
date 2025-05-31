@@ -91,10 +91,6 @@ class _StudentListPageState extends State<StudentListPage> {
               controller: _emailController,
               decoration: InputDecoration(labelText: 'Email'),
             ),
-            TextField(
-              controller: _organizationController,
-              decoration: InputDecoration(labelText: 'Organization'),
-            ),
             SizedBox(height: 10),
             ElevatedButton(onPressed: createUser, child: Text('Create User')),
             Divider(height: 30),
