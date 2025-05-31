@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-// import './Userpages/home_page.dart'; // Make sure this import path is correct
 import 'login_page.dart';
 
 Future<String> getLocalIP() async {
@@ -42,7 +41,11 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> initializeBaseUrl() async {
-    final host = dotenv.env['BACKEND_URL']!;
+    final host = dotenv.env['BACKEND_URL'];
+    if (host == null) {
+      print('Error: BACKEND_URL not found in .env file');
+      return;
+    }
     setState(() {
       baseUrl = '$host/api/auth';
       print('Base URL initialized: $baseUrl');
@@ -50,7 +53,9 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> register() async {
-    if (baseUrl == null) return;
+    if (baseUrl == null) {
+      return;
+    }
 
     final response = await http.post(
       Uri.parse('$baseUrl/register'),
@@ -69,8 +74,10 @@ class _AuthPageState extends State<AuthPage> {
         context,
         MaterialPageRoute(
           builder:
-              (context) =>
-                  AdminApp(orgName: responseData['member'], orgId: responseData['orgid']),
+              (context) => AdminApp(
+                orgName: responseData['member'],
+                orgId: responseData['orgid'],
+              ),
         ),
       );
     } else {
@@ -94,12 +101,13 @@ class _AuthPageState extends State<AuthPage> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      print(data['org']);
+      print(data['orgid']);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder:
-              (context) =>
-                  AdminApp(orgName: data['member'], orgId: data['orgid']),
+              (context) => AdminApp(orgName: data['org'], orgId: data['orgid']['_id']),
         ),
       );
     } else {
@@ -199,7 +207,7 @@ class _AuthPageState extends State<AuthPage> {
     if (baseUrl == null) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    print('Building AuthPage with baseUrl: $baseUrl');
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -264,8 +272,6 @@ class _AuthPageState extends State<AuthPage> {
                   ),
                 ),
                 SizedBox(height: 24),
-
-                /// 👇 "Continue as User" button
                 TextButton(
                   onPressed: () {
                     Navigator.push(

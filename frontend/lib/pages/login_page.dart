@@ -38,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> initializeBaseUrl() async {
     final host = dotenv.env['BACKEND_URL']!;
     setState(() {
-      baseUrl = '$host/api/auth';
+      baseUrl = '$host';
       print('Base URL initialized: $baseUrl');
     });
   }
