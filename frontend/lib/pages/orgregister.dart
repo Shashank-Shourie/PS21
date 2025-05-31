@@ -76,7 +76,7 @@ class _AuthPageState extends State<AuthPage> {
           builder:
               (context) => AdminApp(
                 orgName: responseData['member'],
-                orgId: responseData['orgid'],
+                orgId: responseData['orgid']['_id'],
               ),
         ),
       );
