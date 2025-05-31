@@ -91,6 +91,7 @@ router.post('/userslist', async (req, res) => {
     try {
         const { organizationId } = req.body;
         const users = await User.find({_id:organizationId});
+        console.log(users);
         res.status(200).json(users);
     } catch (error) {
         console.log(error);

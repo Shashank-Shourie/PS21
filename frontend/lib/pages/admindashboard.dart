@@ -330,7 +330,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     return Scaffold(
       drawer: _buildSidebar(),
       appBar: AppBar(
-        title: Text("Organisation Name"),
+        title: Text("${widget.orgName}"),
         actions: [
           IconButton(
             icon: Icon(Icons.account_circle),
