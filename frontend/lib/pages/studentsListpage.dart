@@ -55,7 +55,7 @@ class _StudentListPageState extends State<StudentListPage> {
 
   Future<void> fetchUsers() async {
     final response = await http.post(
-      Uri.parse('$backendUrl/users'),
+      Uri.parse('$backendUrl/users/userslist'),
       headers: {"Content-Type": "application/json"},
       body: json.encode({
       "organizationId": widget.orgId,

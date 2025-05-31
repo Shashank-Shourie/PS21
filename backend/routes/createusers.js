@@ -87,7 +87,7 @@ router.post('/userregister', async (req, res) => {
     }
 });
 
-router.post('/users', async (req, res) => {
+router.post('/userslist', async (req, res) => {
     try {
         const { organizationId } = req.body;
         const users = await User.find({_id:organizationId});
