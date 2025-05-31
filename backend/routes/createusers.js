@@ -90,7 +90,7 @@ router.post('/userregister', async (req, res) => {
 router.post('/userslist', async (req, res) => {
     try {
         const { organizationId } = req.body;
-        const users = await User.find({_id:organizationId});
+        const users = await User.find({Organization:organizationId});
         console.log(users);
         res.status(200).json(users);
     } catch (error) {
