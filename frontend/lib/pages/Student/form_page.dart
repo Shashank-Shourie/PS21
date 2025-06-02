@@ -1,539 +1,522 @@
-import 'dart:convert';
-import 'dart:io';
-
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter/foundation.dart';
+import 'dart:convert';
 
+class FormPage extends StatefulWidget {
+  final String extractedText;
 
-class FormPage extends StatelessWidget {
+  const FormPage({
+    super.key,
+    required this.extractedText,
+  });
+
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Form Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        scaffoldBackgroundColor: Colors.grey[100],
-        inputDecorationTheme: InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.deepPurple.shade200),
-          ),
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          labelStyle: TextStyle(color: Colors.deepPurple.shade700),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.deepPurple, width: 2),
-          ),
-        ),
-      ),
-      home: EamcetForm(),
-    );
-  }
+  State<FormPage> createState() => _FormPageState();
 }
 
-class EamcetForm extends StatefulWidget {
-  @override
-  _EamcetFormState createState() => _EamcetFormState();
-}
-
-class _EamcetFormState extends State<EamcetForm> {
-  String baseUrl = '';
+class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
+  late TabController _tabController;
+  
+  // Form controllers
   final _formKey = GlobalKey<FormState>();
-  String? _boardType;
-
-  // Controllers
-  final TextEditingController _dobController = TextEditingController();
-  final TextEditingController _aadhaarController = TextEditingController();
-  final TextEditingController _percentageController = TextEditingController();
-  final TextEditingController _incomeController = TextEditingController();
-
-  // Add controllers for all form fields you want to send for comparison
-  final TextEditingController _studentNameController = TextEditingController();
-  final TextEditingController _guardianNameController = TextEditingController();
-  final TextEditingController _rollNumberController = TextEditingController();
-  final TextEditingController _yearController = TextEditingController();
-  final TextEditingController _eamcetRankController = TextEditingController();
-  final TextEditingController _eamcetRollNumberController = TextEditingController();
-  final TextEditingController _casteController = TextEditingController();
-
-  File? _pickedFile;
-  String? _comparisonResult;
-  bool _loading = false;
+  final Map<String, TextEditingController> _controllers = {};
+  final Map<String, FocusNode> _focusNodes = {};
+  
+  // Data comparison results
+  Map<String, ComparisonResult> _comparisonResults = {};
+  bool _showComparison = false;
+  
+  // Form fields configuration
+  final List<FormField> _formFields = [
+    FormField('fullName', 'Full Name', TextInputType.name, true),
+    FormField('fatherName', 'Father\'s Name', TextInputType.name, true),
+    FormField('motherName', 'Mother\'s Name', TextInputType.name, false),
+    FormField('dateOfBirth', 'Date of Birth', TextInputType.datetime, true),
+    FormField('gender', 'Gender', TextInputType.text, true),
+    FormField('aadharNumber', 'Aadhar Number', TextInputType.number, true),
+    FormField('mobileNumber', 'Mobile Number', TextInputType.phone, true),
+    FormField('email', 'Email Address', TextInputType.emailAddress, false),
+    FormField('address', 'Address', TextInputType.multiline, true),
+    FormField('pincode', 'Pincode', TextInputType.number, true),
+    FormField('tenthMarks', '10th Marks/Percentage', TextInputType.number, true),
+    FormField('interMarks', 'Inter Marks/Percentage', TextInputType.number, true),
+    FormField('eamcetRank', 'EAMCET Rank', TextInputType.number, false),
+    FormField('category', 'Category', TextInputType.text, true),
+    FormField('income', 'Family Income', TextInputType.number, false),
+  ];
 
   @override
   void initState() {
     super.initState();
-    initializeBaseUrl();
+    _tabController = TabController(length: 2, vsync: this);
+    _initializeControllers();
+    _extractAndFillData();
   }
 
   @override
   void dispose() {
-    _dobController.dispose();
-    _aadhaarController.dispose();
-    _percentageController.dispose();
-    _incomeController.dispose();
-    _studentNameController.dispose();
-    _guardianNameController.dispose();
-    _rollNumberController.dispose();
-    _yearController.dispose();
-    _eamcetRankController.dispose();
-    _eamcetRollNumberController.dispose();
-    _casteController.dispose();
+    _tabController.dispose();
+    for (var controller in _controllers.values) {
+      controller.dispose();
+    }
+    for (var focusNode in _focusNodes.values) {
+      focusNode.dispose();
+    }
     super.dispose();
   }
-  Future<void> initializeBaseUrl() async {
-    final host = dotenv.env['BACKEND_URL']!;
+
+  void _initializeControllers() {
+    for (var field in _formFields) {
+      _controllers[field.key] = TextEditingController();
+      _focusNodes[field.key] = FocusNode();
+    }
+  }
+
+  void _extractAndFillData() {
+    final extractedData = _extractDataFromText(widget.extractedText);
+    
+    // Fill form fields with extracted data
+    for (var entry in extractedData.entries) {
+      if (_controllers.containsKey(entry.key)) {
+        _controllers[entry.key]!.text = entry.value;
+      }
+    }
+    
+    setState(() {});
+  }
+
+  Map<String, String> _extractDataFromText(String text) {
+    Map<String, String> extractedData = {};
+    
+    // Convert text to lowercase for easier matching
+    String lowerText = text.toLowerCase();
+    
+    // Extract patterns using RegExp
+    final patterns =<String, List<RegExp>>{
+      'fullName': [
+        RegExp(r'name[:\s]*([a-za-z\s]+)', caseSensitive: false),
+        RegExp(r'student name[:\s]*([a-za-z\s]+)', caseSensitive: false),
+      ],
+      'fatherName': [
+        RegExp(r'father[\s]*\s*name[:\s]*([a-za-z\s]+)', caseSensitive: false),
+        RegExp(r'father[:\s]*([a-za-z\s]+)', caseSensitive: false),
+      ],
+      'motherName': [
+        RegExp(r'mother[\s]*\s*name[:\s]*([a-za-z\s]+)', caseSensitive: false),
+        RegExp(r'mother[:\s]*([a-za-z\s]+)', caseSensitive: false),
+      ],
+      'dateOfBirth': [
+        RegExp(r'date of birth[:\s]*(\d{1,2}[/-]\d{1,2}[/-]\d{4})', caseSensitive: false),
+        RegExp(r'dob[:\s]*(\d{1,2}[/-]\d{1,2}[/-]\d{4})', caseSensitive: false),
+        RegExp(r'(\d{1,2}[/-]\d{1,2}[/-]\d{4})'),
+      ],
+      'aadharNumber': [
+        RegExp(r'aadhar[:\s]*(\d{4}\s*\d{4}\s*\d{4})', caseSensitive: false),
+        RegExp(r'aadhaar[:\s]*(\d{4}\s*\d{4}\s*\d{4})', caseSensitive: false),
+        RegExp(r'(\d{4}\s*\d{4}\s*\d{4})'),
+      ],
+      'mobileNumber': [
+        RegExp(r'mobile[:\s]*(\d{10})', caseSensitive: false),
+        RegExp(r'phone[:\s]*(\d{10})', caseSensitive: false),
+        RegExp(r'(\d{10})'),
+      ],
+      'tenthMarks': [
+        RegExp(r'10th[:\s]*(\d+\.?\d*)', caseSensitive: false),
+        RegExp(r'tenth[:\s]*(\d+\.?\d*)', caseSensitive: false),
+        RegExp(r'ssc[:\s]*(\d+\.?\d*)', caseSensitive: false),
+      ],
+      'interMarks': [
+        RegExp(r'inter[:\s]*(\d+\.?\d*)', caseSensitive: false),
+        RegExp(r'intermediate[:\s]*(\d+\.?\d*)', caseSensitive: false),
+        RegExp(r'12th[:\s]*(\d+\.?\d*)', caseSensitive: false),
+      ],
+      'eamcetRank': [
+        RegExp(r'eamcet[:\s]*rank[:\s]*(\d+)', caseSensitive: false),
+        RegExp(r'rank[:\s]*(\d+)', caseSensitive: false),
+      ],
+      'pincode': [
+        RegExp(r'pincode[:\s]*(\d{6})', caseSensitive: false),
+        RegExp(r'pin[:\s]*(\d{6})', caseSensitive: false),
+      ],
+    };
+
+    // Extract gender
+    if (lowerText.contains('male') && !lowerText.contains('female')) {
+      extractedData['gender'] = 'Male';
+    } else if (lowerText.contains('female')) {
+      extractedData['gender'] = 'Female';
+    }
+
+    // Extract category
+    final categories = ['general', 'obc', 'sc', 'st', 'ews'];
+    for (String category in categories) {
+      if (lowerText.contains(category)) {
+        extractedData['category'] = category.toUpperCase();
+        break;
+      }
+    }
+
+    // Apply patterns
+    for (var entry in patterns.entries) {
+      for (var pattern in entry.value) {
+        final match = pattern.firstMatch(text);
+        if (match != null && match.group(1) != null) {
+          extractedData[entry.key] = match.group(1)!.trim();
+          break;
+        }
+      }
+    }
+
+    return extractedData;
+  }
+
+  void _compareFormData() {
+    final formData = <String, String>{};
+    final extractedData = _extractDataFromText(widget.extractedText);
+    
+    // Get current form data
+    for (var field in _formFields) {
+      formData[field.key] = _controllers[field.key]!.text.trim();
+    }
+    
+    // Compare data
+    _comparisonResults.clear();
+    for (var field in _formFields) {
+      final formValue = formData[field.key] ?? '';
+      final extractedValue = extractedData[field.key] ?? '';
+      
+      if (formValue.isNotEmpty || extractedValue.isNotEmpty) {
+        _comparisonResults[field.key] = ComparisonResult(
+          fieldName: field.label,
+          formValue: formValue,
+          extractedValue: extractedValue,
+          isMatch: _isValueMatch(formValue, extractedValue),
+        );
+      }
+    }
+    
     setState(() {
-      baseUrl = '$host/extract/compare-form';
-      if (kDebugMode) print('Base URL initialized: $baseUrl');
+      _showComparison = true;
+      _tabController.animateTo(1);
     });
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: Colors.deepPurple,
-              onPrimary: Colors.white,
-              onSurface: Colors.deepPurple.shade700,
+  bool _isValueMatch(String formValue, String extractedValue) {
+    if (formValue.isEmpty && extractedValue.isEmpty) return true;
+    if (formValue.isEmpty || extractedValue.isEmpty) return false;
+    
+    // Normalize values for comparison
+    String normalizeValue(String value) {
+      return value.toLowerCase()
+          .replaceAll(RegExp(r'\s+'), ' ')
+          .replaceAll(RegExp(r'[^\w\s]'), '')
+          .trim();
+    }
+    
+    final normalizedForm = normalizeValue(formValue);
+    final normalizedExtracted = normalizeValue(extractedValue);
+    
+    // Check for exact match or partial match (for names, addresses)
+    return normalizedForm == normalizedExtracted ||
+           normalizedForm.contains(normalizedExtracted) ||
+           normalizedExtracted.contains(normalizedForm);
+  }
+
+  Widget _buildFormTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Card(
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Personal Information',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ..._formFields.map((field) => Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: TextFormField(
+                        controller: _controllers[field.key],
+                        focusNode: _focusNodes[field.key],
+                        keyboardType: field.inputType,
+                        maxLines: field.inputType == TextInputType.multiline ? 3 : 1,
+                        decoration: InputDecoration(
+                          labelText: field.label,
+                          border: const OutlineInputBorder(),
+                          prefixIcon: _getIconForField(field.key),
+                        ),
+                        validator: field.isRequired ? (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return '${field.label} is required';
+                          }
+                          return null;
+                        } : null,
+                      ),
+                    )).toList(),
+                  ],
+                ),
+              ),
             ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.deepPurple,
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _compareFormData();
+                  }
+                },
+                icon: const Icon(Icons.compare_arrows),
+                label: const Text('Compare with Extracted Data'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildComparisonTab() {
+    if (!_showComparison) {
+      return const Center(
+        child: Text(
+          'Fill the form and click "Compare with Extracted Data" to see comparison results.',
+          style: TextStyle(fontSize: 16),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    final matchedFields = _comparisonResults.values.where((r) => r.isMatch).length;
+    final totalFields = _comparisonResults.length;
+    final matchPercentage = totalFields > 0 ? (matchedFields / totalFields * 100).round() : 0;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Card(
+            elevation: 2,
+            color: matchPercentage >= 80 ? Colors.green[50] : 
+                   matchPercentage >= 60 ? Colors.orange[50] : Colors.red[50],
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  Icon(
+                    matchPercentage >= 80 ? Icons.check_circle : 
+                    matchPercentage >= 60 ? Icons.warning : Icons.error,
+                    color: matchPercentage >= 80 ? Colors.green : 
+                           matchPercentage >= 60 ? Colors.orange : Colors.red,
+                    size: 32,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Data Match: $matchPercentage%',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          '$matchedFields out of $totalFields fields match',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          child: child!,
-        );
-      },
+          const SizedBox(height: 16),
+          ..._comparisonResults.entries.map((entry) {
+            final result = entry.value;
+            return Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                leading: Icon(
+                  result.isMatch ? Icons.check_circle : Icons.error,
+                  color: result.isMatch ? Colors.green : Colors.red,
+                ),
+                title: Text(result.fieldName),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Form: ${result.formValue.isEmpty ? "Not provided" : result.formValue}'),
+                    Text('Extracted: ${result.extractedValue.isEmpty ? "Not found" : result.extractedValue}'),
+                  ],
+                ),
+                isThreeLine: true,
+              ),
+            );
+          }).toList(),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    _tabController.animateTo(0);
+                  },
+                  icon: const Icon(Icons.edit),
+                  label: const Text('Edit Form'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: matchPercentage >= 80 ? () {
+                    _showSuccessDialog();
+                  } : null,
+                  icon: const Icon(Icons.save),
+                  label: const Text('Submit'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
-    if (picked != null) {
-      setState(() {
-        _dobController.text = DateFormat('dd/MM/yyyy').format(picked);
-      });
+  }
+
+  Icon _getIconForField(String fieldKey) {
+    switch (fieldKey) {
+      case 'fullName':
+      case 'fatherName':
+      case 'motherName':
+        return const Icon(Icons.person);
+      case 'dateOfBirth':
+        return const Icon(Icons.calendar_today);
+      case 'gender':
+        return const Icon(Icons.people);
+      case 'aadharNumber':
+        return const Icon(Icons.credit_card);
+      case 'mobileNumber':
+        return const Icon(Icons.phone);
+      case 'email':
+        return const Icon(Icons.email);
+      case 'address':
+        return const Icon(Icons.location_on);
+      case 'pincode':
+        return const Icon(Icons.pin_drop);
+      case 'tenthMarks':
+      case 'interMarks':
+        return const Icon(Icons.school);
+      case 'eamcetRank':
+        return const Icon(Icons.military_tech);
+      case 'category':
+        return const Icon(Icons.category);
+      case 'income':
+        return const Icon(Icons.monetization_on);
+      default:
+        return const Icon(Icons.text_fields);
     }
   }
 
-  Future<void> _pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Success!'),
+        content: const Text('Form data has been validated and submitted successfully.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop(); // Go back to previous screen
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
     );
-
-    if (result != null && result.files.single.path != null) {
-      setState(() {
-        _pickedFile = File(result.files.single.path!);
-      });
-    }
-  }
-
-  Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    if (_pickedFile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select a PDF file to upload')),
-      );
-      return;
-    }
-
-    setState(() {
-      _loading = true;
-      _comparisonResult = null;
-    });
-
-    try {
-      var uri = Uri.parse('http://YOUR_BACKEND_URL/compare-form'); // Replace with your backend URL
-
-      var request = http.MultipartRequest('POST', uri);
-
-      // Add form fields
-      request.fields['studentName'] = _studentNameController.text.trim();
-      request.fields['dob'] = _dobController.text.trim();
-      request.fields['guardianName'] = _guardianNameController.text.trim();
-      request.fields['aadhaar'] = _aadhaarController.text.trim();
-      request.fields['boardType'] = _boardType ?? '';
-      request.fields['rollNumber'] = _rollNumberController.text.trim();
-      request.fields['year'] = _yearController.text.trim();
-      request.fields['percentage'] = _percentageController.text.trim();
-      request.fields['eamcetRank'] = _eamcetRankController.text.trim();
-      request.fields['eamcetRollNumber'] = _eamcetRollNumberController.text.trim();
-      request.fields['familyIncome'] = _incomeController.text.trim();
-      request.fields['caste'] = _casteController.text.trim();
-
-      // Add file
-      request.files.add(await http.MultipartFile.fromPath('file', _pickedFile!.path));
-
-      // Send request
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
-
-      if (response.statusCode == 200) {
-        var jsonResponse = jsonDecode(response.body);
-
-        setState(() {
-          _comparisonResult = jsonResponse['comparisonResult'] ?? 'No comparison result';
-        });
-      } else {
-        setState(() {
-          _comparisonResult = 'Error: ${response.statusCode} - ${response.reasonPhrase}';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _comparisonResult = 'Failed to submit: $e';
-      });
-    } finally {
-      setState(() {
-        _loading = false;
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Application Form',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        elevation: 0,
+        title: const Text('Document Verification Form'),
         backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Padding(
-            padding: EdgeInsets.all(20.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Personal Details',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple.shade700,
-                      )),
-                  SizedBox(height: 16),
-
-                  // Student Name
-                  TextFormField(
-                    controller: _studentNameController,
-                    decoration: InputDecoration(
-                      labelText: 'Student Name',
-                      prefixIcon: Icon(Icons.person, color: Colors.deepPurple),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter student name';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-
-                  // Date of Birth
-                  TextFormField(
-                    controller: _dobController,
-                    decoration: InputDecoration(
-                      labelText: 'Date of Birth (DD/MM/YYYY)',
-                      prefixIcon: Icon(Icons.calendar_today, color: Colors.deepPurple),
-                    ),
-                    readOnly: true,
-                    onTap: () => _selectDate(context),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please select date of birth';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-
-                  // Guardian's Name
-                  TextFormField(
-                    controller: _guardianNameController,
-                    decoration: InputDecoration(
-                      labelText: "Guardian's Name",
-                      prefixIcon: Icon(Icons.person_outline, color: Colors.deepPurple),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter guardian name';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-
-                  // Aadhaar Number
-                  TextFormField(
-                    controller: _aadhaarController,
-                    decoration: InputDecoration(
-                      labelText: 'Aadhaar Number',
-                      prefixIcon: Icon(Icons.credit_card, color: Colors.deepPurple),
-                    ),
-                    keyboardType: TextInputType.number,
-                    maxLength: 12,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter Aadhaar number';
-                      }
-                      if (value.length != 12) {
-                        return 'Aadhaar number must be 12 digits';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 24),
-
-                  // Academic Details Title
-                  Text('Academic Details',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple.shade700,
-                      )),
-                  SizedBox(height: 16),
-
-                  // Board Type Dropdown
-                  DropdownButtonFormField<String>(
-                    value: _boardType,
-                    decoration: InputDecoration(
-                      labelText: 'Board Type',
-                      prefixIcon: Icon(Icons.school, color: Colors.deepPurple),
-                    ),
-                    items: ['SSC', 'CBSE', 'ICSE']
-                        .map((label) => DropdownMenuItem(
-                              child: Text(label),
-                              value: label,
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _boardType = value;
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null) {
-                        return 'Please select a board type';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-
-                  // Roll Number
-                  TextFormField(
-                    controller: _rollNumberController,
-                    decoration: InputDecoration(
-                      labelText: 'Roll Number',
-                      prefixIcon: Icon(Icons.confirmation_number, color: Colors.deepPurple),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter roll number';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-
-                  // Year
-                  TextFormField(
-                    controller: _yearController,
-                    decoration: InputDecoration(
-                      labelText: 'Year',
-                      prefixIcon: Icon(Icons.date_range, color: Colors.deepPurple),
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter year';
-                      }
-                      if (int.tryParse(value) == null || int.parse(value) < 1900 || int.parse(value) > DateTime.now().year) {
-                        return 'Please enter a valid year';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-
-                  // Intermediate Percentage
-                  TextFormField(
-                    controller: _percentageController,
-                    decoration: InputDecoration(
-                      labelText: 'Intermediate Percentage',
-                      prefixIcon: Icon(Icons.percent, color: Colors.deepPurple),
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter percentage';
-                      }
-                      final numValue = num.tryParse(value);
-                      if (numValue == null || numValue < 0 || numValue > 100) {
-                        return 'Enter a valid percentage (0-100)';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-
-                  // Eamcet Rank
-                  TextFormField(
-                    controller: _eamcetRankController,
-                    decoration: InputDecoration(
-                      labelText: 'Eamcet Rank',
-                      prefixIcon: Icon(Icons.emoji_events, color: Colors.deepPurple),
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter Eamcet rank';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-
-                  // Eamcet Roll Number
-                  TextFormField(
-                    controller: _eamcetRollNumberController,
-                    decoration: InputDecoration(
-                      labelText: 'Eamcet Roll Number',
-                      prefixIcon: Icon(Icons.confirmation_number_outlined, color: Colors.deepPurple),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter Eamcet roll number';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-
-                  // Family Income
-                  TextFormField(
-                    controller: _incomeController,
-                    decoration: InputDecoration(
-                      labelText: 'Family Income',
-                      prefixIcon: Icon(Icons.attach_money, color: Colors.deepPurple),
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter family income';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-
-                  // Caste
-                  TextFormField(
-                    controller: _casteController,
-                    decoration: InputDecoration(
-                      labelText: 'Caste',
-                      prefixIcon: Icon(Icons.group, color: Colors.deepPurple),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter caste';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 24),
-
-                  // File Picker Button
-                  ElevatedButton.icon(
-                    onPressed: _pickFile,
-                    icon: Icon(Icons.attach_file),
-                    label: Text(_pickedFile == null ? 'Select PDF File' : 'Change PDF File'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  if (_pickedFile != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        'Selected file: ${_pickedFile!.path.split('/').last}',
-                        style: TextStyle(color: Colors.deepPurple.shade700),
-                      ),
-                    ),
-
-                  SizedBox(height: 32),
-
-                  // Submit Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _loading ? null : _submitForm,
-                      child: _loading
-                          ? SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                            )
-                          : Text('Submit', style: TextStyle(fontSize: 18)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
-                        padding: EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: 24),
-
-                  // Comparison Result Display
-                  if (_comparisonResult != null)
-                    Container(
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.deepPurple.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        'Comparison Result:\n$_comparisonResult',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.deepPurple.shade900,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          tabs: const [
+            Tab(icon: Icon(Icons.edit_document), text: 'Form'),
+            Tab(icon: Icon(Icons.compare), text: 'Comparison'),
+          ],
         ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildFormTab(),
+          _buildComparisonTab(),
+        ],
       ),
     );
   }
+}
+
+class FormField {
+  final String key;
+  final String label;
+  final TextInputType inputType;
+  final bool isRequired;
+
+  FormField(this.key, this.label, this.inputType, this.isRequired);
+}
+
+class ComparisonResult {
+  final String fieldName;
+  final String formValue;
+  final String extractedValue;
+  final bool isMatch;
+
+  ComparisonResult({
+    required this.fieldName,
+    required this.formValue,
+    required this.extractedValue,
+    required this.isMatch,
+  });
 }
