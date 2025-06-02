@@ -7,7 +7,11 @@ class StudentListPage extends StatefulWidget {
   final String admissionType;
   final String orgId;
   final String orgName;
-  StudentListPage({required this.admissionType,required this.orgId, required this.orgName});
+  StudentListPage({
+    required this.admissionType,
+    required this.orgId,
+    required this.orgName,
+  });
 
   @override
   _StudentListPageState createState() => _StudentListPageState();
@@ -23,49 +27,57 @@ class _StudentListPageState extends State<StudentListPage> {
   final String? backendUrl = dotenv.env['BACKEND_URL'];
 
   Future<void> createUser() async {
-  final response = await http.post(
-    Uri.parse('$backendUrl/user/userregister'),
-    headers: {"Content-Type": "application/json"},
-    body: json.encode({
-      "name": _nameController.text,
-      "email": _emailController.text,
-      "organizationId": widget.orgId,
-    }),
-  );
-
-  if (response.statusCode == 201) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('User created')));
-    _nameController.clear();
-    _emailController.clear();
-    _organizationController.clear();
-    fetchUsers(); // Refresh the list
-  } else {
-    // Decode the backend error response and show it
-    final errorData = json.decode(response.body);
-    print('Backend Error: $errorData'); // Logs to console
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Failed to create user: ${errorData['error'] ?? 'Unknown error'}')),
+    final response = await http.post(
+      Uri.parse('$backendUrl/user/userregister'),
+      headers: {"Content-Type": "application/json"},
+      body: json.encode({
+        "name": _nameController.text,
+        "email": _emailController.text,
+        "organizationId": widget.orgId,
+      }),
     );
-  }
-}
-
-
-  Future<void> fetchUsers() async {
-    final response = await http.get(Uri.parse('$backendUrl/users'));
 
     if (response.statusCode == 201) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('User created')));
+      _nameController.clear();
+      _emailController.clear();
+      _organizationController.clear();
+      fetchUsers(); // Refresh the list
+    } else {
+      // Decode the backend error response and show it
+      final errorData = json.decode(response.body);
+      print('Backend Error: $errorData'); // Logs to console
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Failed to create user: ${errorData['error'] ?? 'Unknown error'}',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> fetchUsers() async {
+    print('Calling $backendUrl/user/userslist');
+    print('Organization ID: ${widget.orgId}');
+    final response = await http.post(
+      Uri.parse('$backendUrl/user/userslist'),
+      headers: {"Content-Type": "application/json"},
+      body: json.encode({"organizationId": widget.orgId}),
+    );
+  print(response.body);
+    if (response.statusCode == 200) {
       setState(() {
         // Optionally filter users by admissionType if it's part of the user data
-        users =
-            json.decode(response.body).where((user) {
-              return user['admissionType'] == widget.admissionType;
-            }).toList();
+        users = json.decode(response.body).toList();
+        print(users);
       });
     } else {
       print("Error fetching users");
+      print(response.body);
     }
   }
 
