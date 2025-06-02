@@ -4,10 +4,7 @@ import 'dart:convert';
 class FormPage extends StatefulWidget {
   final String extractedText;
 
-  const FormPage({
-    super.key,
-    required this.extractedText,
-  });
+  const FormPage({super.key, required this.extractedText});
 
   @override
   State<FormPage> createState() => _FormPageState();
@@ -15,16 +12,16 @@ class FormPage extends StatefulWidget {
 
 class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
   late TabController _tabController;
-  
+
   // Form controllers
   final _formKey = GlobalKey<FormState>();
   final Map<String, TextEditingController> _controllers = {};
   final Map<String, FocusNode> _focusNodes = {};
-  
+
   // Data comparison results
   Map<String, ComparisonResult> _comparisonResults = {};
   bool _showComparison = false;
-  
+
   // Form fields configuration
   final List<FormField> _formFields = [
     FormField('fullName', 'Full Name', TextInputType.name, true),
@@ -37,8 +34,18 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
     FormField('email', 'Email Address', TextInputType.emailAddress, false),
     // FormField('address', 'Address', TextInputType.multiline, true),
     FormField('pincode', 'Pincode', TextInputType.number, true),
-    FormField('tenthMarks', '10th Marks/Percentage', TextInputType.number, true),
-    FormField('interMarks', 'Inter Marks/Percentage', TextInputType.number, true),
+    FormField(
+      'tenthMarks',
+      '10th Marks/Percentage',
+      TextInputType.number,
+      true,
+    ),
+    FormField(
+      'interMarks',
+      'Inter Marks/Percentage',
+      TextInputType.number,
+      true,
+    ),
     FormField('eamcetRank', 'EAMCET Rank', TextInputType.number, false),
     FormField('category', 'Category', TextInputType.text, true),
     FormField('income', 'Family Income', TextInputType.number, false),
@@ -73,25 +80,25 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
 
   void _extractAndFillData() {
     final extractedData = _extractDataFromText(widget.extractedText);
-    
+
     // Fill form fields with extracted data
     for (var entry in extractedData.entries) {
       if (_controllers.containsKey(entry.key)) {
         _controllers[entry.key]!.text = entry.value;
       }
     }
-    
+
     setState(() {});
   }
 
   Map<String, String> _extractDataFromText(String text) {
     Map<String, String> extractedData = {};
-    
+
     // Convert text to lowercase for easier matching
     String lowerText = text.toLowerCase();
-    
+
     // Extract patterns using RegExp
-    final patterns =<String, List<RegExp>>{
+    final patterns = <String, List<RegExp>>{
       'fullName': [
         RegExp(r'name[:\s]*([a-za-z\s]+)', caseSensitive: false),
         RegExp(r'student name[:\s]*([a-za-z\s]+)', caseSensitive: false),
@@ -105,7 +112,10 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
         RegExp(r'mother[:\s]*([a-za-z\s]+)', caseSensitive: false),
       ],
       'dateOfBirth': [
-        RegExp(r'date of birth[:\s]*(\d{1,2}[/-]\d{1,2}[/-]\d{4})', caseSensitive: false),
+        RegExp(
+          r'date of birth[:\s]*(\d{1,2}[/-]\d{1,2}[/-]\d{4})',
+          caseSensitive: false,
+        ),
         RegExp(r'dob[:\s]*(\d{1,2}[/-]\d{1,2}[/-]\d{4})', caseSensitive: false),
         RegExp(r'(\d{1,2}[/-]\d{1,2}[/-]\d{4})'),
       ],
@@ -172,18 +182,18 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
   void _compareFormData() {
     final formData = <String, String>{};
     final extractedData = _extractDataFromText(widget.extractedText);
-    
+
     // Get current form data
     for (var field in _formFields) {
       formData[field.key] = _controllers[field.key]!.text.trim();
     }
-    
+
     // Compare data
     _comparisonResults.clear();
     for (var field in _formFields) {
       final formValue = formData[field.key] ?? '';
       final extractedValue = extractedData[field.key] ?? '';
-      
+
       if (formValue.isNotEmpty || extractedValue.isNotEmpty) {
         _comparisonResults[field.key] = ComparisonResult(
           fieldName: field.label,
@@ -193,7 +203,7 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
         );
       }
     }
-    
+
     setState(() {
       _showComparison = true;
       _tabController.animateTo(1);
@@ -203,22 +213,23 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
   bool _isValueMatch(String formValue, String extractedValue) {
     if (formValue.isEmpty && extractedValue.isEmpty) return true;
     if (formValue.isEmpty || extractedValue.isEmpty) return false;
-    
+
     // Normalize values for comparison
     String normalizeValue(String value) {
-      return value.toLowerCase()
+      return value
+          .toLowerCase()
           .replaceAll(RegExp(r'\s+'), ' ')
           .replaceAll(RegExp(r'[^\w\s]'), '')
           .trim();
     }
-    
+
     final normalizedForm = normalizeValue(formValue);
     final normalizedExtracted = normalizeValue(extractedValue);
-    
+
     // Check for exact match or partial match (for names, addresses)
     return normalizedForm == normalizedExtracted ||
-           normalizedForm.contains(normalizedExtracted) ||
-           normalizedExtracted.contains(normalizedForm);
+        normalizedForm.contains(normalizedExtracted) ||
+        normalizedExtracted.contains(normalizedForm);
   }
 
   Widget _buildFormTab() {
@@ -238,32 +249,45 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
                   children: [
                     Text(
                       'Personal Information',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      style: Theme.of(
+                        context,
+                      ).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: Colors.deepPurple,
                       ),
                     ),
                     const SizedBox(height: 16),
-                    ..._formFields.map((field) => Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: TextFormField(
-                        controller: _controllers[field.key],
-                        focusNode: _focusNodes[field.key],
-                        keyboardType: field.inputType,
-                        maxLines: field.inputType == TextInputType.multiline ? 3 : 1,
-                        decoration: InputDecoration(
-                          labelText: field.label,
-                          border: const OutlineInputBorder(),
-                          prefixIcon: _getIconForField(field.key),
-                        ),
-                        validator: field.isRequired ? (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return '${field.label} is required';
-                          }
-                          return null;
-                        } : null,
-                      ),
-                    )).toList(),
+                    ..._formFields
+                        .map(
+                          (field) => Padding(
+                            padding: const EdgeInsets.only(bottom: 16.0),
+                            child: TextFormField(
+                              controller: _controllers[field.key],
+                              focusNode: _focusNodes[field.key],
+                              keyboardType: field.inputType,
+                              maxLines:
+                                  field.inputType == TextInputType.multiline
+                                      ? 3
+                                      : 1,
+                              decoration: InputDecoration(
+                                labelText: field.label,
+                                border: const OutlineInputBorder(),
+                                prefixIcon: _getIconForField(field.key),
+                              ),
+                              validator:
+                                  field.isRequired
+                                      ? (value) {
+                                        if (value == null ||
+                                            value.trim().isEmpty) {
+                                          return '${field.label} is required';
+                                        }
+                                        return null;
+                                      }
+                                      : null,
+                            ),
+                          ),
+                        )
+                        .toList(),
                   ],
                 ),
               ),
@@ -306,9 +330,11 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
       );
     }
 
-    final matchedFields = _comparisonResults.values.where((r) => r.isMatch).length;
+    final matchedFields =
+        _comparisonResults.values.where((r) => r.isMatch).length;
     final totalFields = _comparisonResults.length;
-    final matchPercentage = totalFields > 0 ? (matchedFields / totalFields * 100).round() : 0;
+    final matchPercentage =
+        totalFields > 0 ? (matchedFields / totalFields * 100).round() : 0;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -317,17 +343,28 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
         children: [
           Card(
             elevation: 2,
-            color: matchPercentage >= 80 ? Colors.green[50] : 
-                   matchPercentage >= 60 ? Colors.orange[50] : Colors.red[50],
+            color:
+                matchPercentage >= 80
+                    ? Colors.green[50]
+                    : matchPercentage >= 60
+                    ? Colors.orange[50]
+                    : Colors.red[50],
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
                 children: [
                   Icon(
-                    matchPercentage >= 80 ? Icons.check_circle : 
-                    matchPercentage >= 60 ? Icons.warning : Icons.error,
-                    color: matchPercentage >= 80 ? Colors.green : 
-                           matchPercentage >= 60 ? Colors.orange : Colors.red,
+                    matchPercentage >= 80
+                        ? Icons.check_circle
+                        : matchPercentage >= 60
+                        ? Icons.warning
+                        : Icons.error,
+                    color:
+                        matchPercentage >= 80
+                            ? Colors.green
+                            : matchPercentage >= 60
+                            ? Colors.orange
+                            : Colors.red,
                     size: 32,
                   ),
                   const SizedBox(width: 16),
@@ -370,8 +407,12 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Form: ${result.formValue.isEmpty ? "Not provided" : result.formValue}'),
-                    Text('Extracted: ${result.extractedValue.isEmpty ? "Not found" : result.extractedValue}'),
+                    Text(
+                      'Form: ${result.formValue.isEmpty ? "Not provided" : result.formValue}',
+                    ),
+                    Text(
+                      'Extracted: ${result.extractedValue.isEmpty ? "Not found" : result.extractedValue}',
+                    ),
                   ],
                 ),
                 isThreeLine: true,
@@ -398,9 +439,12 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
               const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: matchPercentage >= 50 ? () {
-                    _showSuccessDialog();
-                  } : null,
+                  onPressed:
+                      matchPercentage >= 50
+                          ? () {
+                            _showSuccessDialog();
+                          }
+                          : null,
                   icon: const Icon(Icons.save),
                   label: const Text('Submit'),
                   style: ElevatedButton.styleFrom(
@@ -454,19 +498,24 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
   void _showSuccessDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Success!'),
-        content: const Text('Form data has been validated and submitted successfully.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop(); // Go back to previous screen
-            },
-            child: const Text('OK'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Success!'),
+            content: const Text(
+              'Form data has been validated and submitted successfully.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(); // Go back to previous screen
+                },
+                child: const Text('OK'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -489,10 +538,7 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildFormTab(),
-          _buildComparisonTab(),
-        ],
+        children: [_buildFormTab(), _buildComparisonTab()],
       ),
     );
   }
