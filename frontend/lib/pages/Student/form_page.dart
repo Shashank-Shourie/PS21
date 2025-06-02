@@ -5,12 +5,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 
-void main() {
-  runApp(MyApp());
-}
 
-class MyApp extends StatelessWidget {
+class FormPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -46,6 +45,7 @@ class EamcetForm extends StatefulWidget {
 }
 
 class _EamcetFormState extends State<EamcetForm> {
+  String baseUrl = '';
   final _formKey = GlobalKey<FormState>();
   String? _boardType;
 
@@ -69,6 +69,12 @@ class _EamcetFormState extends State<EamcetForm> {
   bool _loading = false;
 
   @override
+  void initState() {
+    super.initState();
+    initializeBaseUrl();
+  }
+
+  @override
   void dispose() {
     _dobController.dispose();
     _aadhaarController.dispose();
@@ -82,6 +88,13 @@ class _EamcetFormState extends State<EamcetForm> {
     _eamcetRollNumberController.dispose();
     _casteController.dispose();
     super.dispose();
+  }
+  Future<void> initializeBaseUrl() async {
+    final host = dotenv.env['BACKEND_URL']!;
+    setState(() {
+      baseUrl = '$host/extract/compare-form';
+      if (kDebugMode) print('Base URL initialized: $baseUrl');
+    });
   }
 
   Future<void> _selectDate(BuildContext context) async {
