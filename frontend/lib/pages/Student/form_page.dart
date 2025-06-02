@@ -35,7 +35,7 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
     FormField('aadharNumber', 'Aadhar Number', TextInputType.number, true),
     FormField('mobileNumber', 'Mobile Number', TextInputType.phone, true),
     FormField('email', 'Email Address', TextInputType.emailAddress, false),
-    FormField('address', 'Address', TextInputType.multiline, true),
+    // FormField('address', 'Address', TextInputType.multiline, true),
     FormField('pincode', 'Pincode', TextInputType.number, true),
     FormField('tenthMarks', '10th Marks/Percentage', TextInputType.number, true),
     FormField('interMarks', 'Inter Marks/Percentage', TextInputType.number, true),
@@ -147,7 +147,7 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
     }
 
     // Extract category
-    final categories = ['general', 'obc', 'sc', 'st', 'ews'];
+    final categories = ['general', 'oc', 'sc', 'st', 'ews'];
     for (String category in categories) {
       if (lowerText.contains(category)) {
         extractedData['category'] = category.toUpperCase();
@@ -398,7 +398,7 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
               const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: matchPercentage >= 80 ? () {
+                  onPressed: matchPercentage >= 50 ? () {
                     _showSuccessDialog();
                   } : null,
                   icon: const Icon(Icons.save),
@@ -433,8 +433,8 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
         return const Icon(Icons.phone);
       case 'email':
         return const Icon(Icons.email);
-      case 'address':
-        return const Icon(Icons.location_on);
+      // case 'address':
+      //   return const Icon(Icons.location_on);
       case 'pincode':
         return const Icon(Icons.pin_drop);
       case 'tenthMarks':
