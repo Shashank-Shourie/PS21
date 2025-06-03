@@ -7,6 +7,7 @@ import 'ecet_page.dart';
 import 'others_page.dart';
 import '../../models/userData.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../login_page.dart';
 
 // Import the UserData class from login_page.dart
 
@@ -239,7 +240,7 @@ class _StudentDashboardState extends State<StudentDashboard>
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
-    Navigator.of(context).pop();
+    Navigator.push(context, MaterialPageRoute(builder: (_) => LoginPage()));
   }
 
   void _showAccountDetails() {
