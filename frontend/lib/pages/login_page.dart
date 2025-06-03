@@ -137,6 +137,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         final userId = data['userid'];
         final email = data['email'];
 
+        print('User ID: $userId, Token: $token, Email: $email');
         // Get full user details
         final userData = await _getUserDetails(userId, token);
 
