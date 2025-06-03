@@ -179,7 +179,7 @@ class _StudentDashboardState extends State<StudentDashboard>
 
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/users/details/${currentUser!.id}'),
+        Uri.parse('$baseUrl/user/details/${currentUser!.id}'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
           'Content-Type': 'application/json',
