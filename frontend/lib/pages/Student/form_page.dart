@@ -105,7 +105,7 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
     String token,
   ) async {
     final host = dotenv.env['BACKEND_URL']!;
-    final url = Uri.parse('$host/users/update-submission/$userId');
+    final url = Uri.parse('$host/user/update-submission/$userId');
     print(userId);
     print(url);
     try {
