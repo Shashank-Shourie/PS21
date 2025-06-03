@@ -349,26 +349,6 @@ class _StudentListPageState extends State<StudentListPage> {
             PopupMenuItem(
               child: Row(
                 children: [
-                  Icon(Icons.visibility, size: 18),
-                  SizedBox(width: 8),
-                  Text('View Details'),
-                ],
-              ),
-              value: 'view',
-            ),
-            PopupMenuItem(
-              child: Row(
-                children: [
-                  Icon(Icons.edit, size: 18),
-                  SizedBox(width: 8),
-                  Text('Edit'),
-                ],
-              ),
-              value: 'edit',
-            ),
-            PopupMenuItem(
-              child: Row(
-                children: [
                   Icon(Icons.delete, size: 18, color: Colors.red),
                   SizedBox(width: 8),
                   Text('Delete', style: TextStyle(color: Colors.red)),
