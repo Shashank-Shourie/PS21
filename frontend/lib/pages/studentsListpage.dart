@@ -274,15 +274,12 @@ class _StudentListPageState extends State<StudentListPage> {
     String statusText;
     
     if (matchPercentage != null) {
-      if (matchPercentage >= 90) {
+      if (matchPercentage >= 75) {
         chipColor = Colors.green;
         statusText = 'Excellent ${matchPercentage.toInt()}%';
-      } else if (matchPercentage >= 75) {
+      } else if (matchPercentage >= 50) {
         chipColor = Colors.lightGreen;
         statusText = 'Good ${matchPercentage.toInt()}%';
-      } else if (matchPercentage >= 60) {
-        chipColor = Colors.orange;
-        statusText = 'Average ${matchPercentage.toInt()}%';
       } else {
         chipColor = Colors.red;
         statusText = 'Poor ${matchPercentage.toInt()}%';
