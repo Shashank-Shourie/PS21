@@ -981,7 +981,7 @@ class _StudentDashboardState extends State<StudentDashboard>
                 Center(
                   child: Container(
                     width: double.infinity,
-                    height: 110,
+                    height: 121,
                     child: ElevatedButton(
                       onPressed: _showUploadDocumentsDialog,
                       style: ElevatedButton.styleFrom(
