@@ -350,6 +350,7 @@ router.get('/verify-token', authenticateToken, async (req, res) => {
 
 // Update user submission status and match percentage (protected route)
 router.put('/update-submission/:userId', authenticateToken, async (req, res) => {
+    console.log('Update submission route hit');
     try {
         const { userId } = req.params;
         const { matchPercentage } = req.body;

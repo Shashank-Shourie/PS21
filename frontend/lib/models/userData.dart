@@ -1,3 +1,47 @@
+// Future<UserData?> _getUserDetails(String userId, String token) async {
+//   try {
+//     print('Fetching user details for userId: $userId');
+//     print('Using token: ${token.substring(0, 20)}...'); // Print partial token for security
+    
+//     final response = await http.get(
+//       Uri.parse('$baseUrl/users/details/$userId'),
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'Authorization': 'Bearer $token',
+//       },
+//     );
+
+//     print('User details response status: ${response.statusCode}');
+//     print('User details response body: ${response.body}');
+
+//     if (response.statusCode == 200) {
+//       final data = jsonDecode(response.body);
+//       print('Parsed user data: $data');
+      
+//       // Debug: Print each field individually
+//       print('id field: ${data['id']}');
+//       print('userid field: ${data['userid']}');
+//       print('name field: ${data['name']}');
+//       print('email field: ${data['email']}');
+//       print('submitted field: ${data['submitted']}');
+//       print('percentage_matched field: ${data['percentage_matched']}');
+//       print('organizationId field: ${data['organizationId']}');
+      
+//       final userData = UserData.fromJson(data, token);
+//       print('Created UserData object - id: ${userData.id}, name: ${userData.name}');
+      
+//       return userData;
+//     } else {
+//       print('Failed to get user details: ${response.statusCode} - ${response.body}');
+//       return null;
+//     }
+//   } catch (e) {
+//     print('Error getting user details: $e');
+//     return null;
+//   }
+// }
+
+// Updated UserData.fromJson method to handle both 'id' and 'userid' fields
 class UserData {
   final String id;
   final String name;
@@ -18,8 +62,14 @@ class UserData {
   });
 
   factory UserData.fromJson(Map<String, dynamic> json, String token) {
+    print('UserData.fromJson input: $json');
+    
+    // Try both 'id' and 'userid' fields - login response uses 'userid', details response uses 'id'
+    String userId = json['id'] ?? json['userid'] ?? '';
+    print('Extracted userId: $userId');
+    
     return UserData(
-      id: json['userid'] ?? '',
+      id: userId,
       name: json['name'] ?? '',
       email: json['email'] ?? '',
       organizationId: json['organizationId'] ?? '',
