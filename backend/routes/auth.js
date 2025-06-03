@@ -161,13 +161,13 @@ router.post('/add', async (req, res) => {
                 message: 'A member with this email address already exists'
             });
         }
-
+        const hashedPassword = await bcrypt.hash('default', 10);
         // Create new member with default password
         const newMember = new Member({
             name: name.trim(),
             email: email.toLowerCase().trim(),
             Organization: organizationId,
-            password: 'default' // Set default password as requested
+            password: hashedPassword // Set default password as requested
         });
 
         // Save the member
