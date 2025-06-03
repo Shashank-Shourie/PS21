@@ -239,7 +239,7 @@ class _StudentDashboardState extends State<StudentDashboard>
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
-    Navigator.pushReplacementNamed(context, '/login');
+    Navigator.of(context).pop();
   }
 
   void _showAccountDetails() {
