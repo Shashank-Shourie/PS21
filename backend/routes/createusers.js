@@ -110,7 +110,7 @@ router.get('/details/:userId', authenticateToken, async (req, res) => {
             submitted: user.submitted,
             percentage_matched: user.percentage_matched,
             organizationId: user.Organization?._id,
-            organizationName: user.Organization?.name
+            organizationName: user.Organization?.OrganizationName
         });
 
     } catch (error) {
