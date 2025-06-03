@@ -24,6 +24,11 @@ const UserSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: Organization,
         required: true
+    },
+    percentage_matched:{
+        type: Number,
+        required:true,
+        default: -1
     }
 })
 
