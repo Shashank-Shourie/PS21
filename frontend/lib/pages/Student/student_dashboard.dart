@@ -12,8 +12,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class StudentApp extends StatelessWidget {
   final UserData userData;
-
-  StudentApp({Key? key,required this.userData}) : super(key: key);
+  String token;
+  StudentApp({Key? key, required this.userData, required this.token}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -58,15 +58,15 @@ class StudentApp extends StatelessWidget {
           color: Colors.white,
         ),
       ),
-      home: StudentDashboard(userData: userData),
+      home: StudentDashboard(userData: userData,token: token,),
     );
   }
 }
 
 class StudentDashboard extends StatefulWidget {
   final UserData? userData;
-
-  const StudentDashboard({Key? key, this.userData}) : super(key: key);
+  String token;
+  StudentDashboard({Key? key, this.userData,required this.token}) : super(key: key);
 
   @override
   _StudentDashboardState createState() => _StudentDashboardState();
@@ -459,7 +459,7 @@ class _StudentDashboardState extends State<StudentDashboard>
                       context,
                       MaterialPageRoute(
                         // builder: (_) => TgcetPage(userData: currentUser),
-                        builder: (_) => TgcetPage(UserId: currentUser!.id,),
+                        builder: (_) => TgcetPage(UserId: currentUser!.id,token:widget.token,),
                       ),
                     );
                   },
@@ -476,7 +476,7 @@ class _StudentDashboardState extends State<StudentDashboard>
                       context,
                       MaterialPageRoute(
                         // builder: (_) => EcetPage(userData: currentUser),
-                        builder: (_) => EcetPage(UserId: currentUser!.id,),
+                        builder: (_) => EcetPage(UserId: currentUser!.id,token: widget.token,),
                       ),
                     );
                   },
@@ -493,7 +493,7 @@ class _StudentDashboardState extends State<StudentDashboard>
                       context,
                       MaterialPageRoute(
                         // builder: (_) => OthersPage(userData: currentUser),
-                        builder: (_) => OthersPage(UserId: currentUser!.id,),
+                        builder: (_) => OthersPage(UserId: currentUser!.id,token: widget.token,),
                       ),
                     );
                   },

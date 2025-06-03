@@ -73,7 +73,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     if (token != null && userData != null) {
       // Auto-login if valid token exists
       final user = UserData.fromJson(jsonDecode(userData), token);
-      _navigateToDashboard(user);
+      _navigateToDashboard(user,token);
     }
   }
 
@@ -144,7 +144,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         if (userData != null) {
           print('Got User Data');
           await _storeUserData(userData);
-          _navigateToDashboard(userData);
+          _navigateToDashboard(userData,token);
         } else {
           // Fallback with basic data
           final basicUserData = UserData(
@@ -157,7 +157,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             percentageMatched: -1,
           );
           await _storeUserData(basicUserData);
-          _navigateToDashboard(basicUserData);
+          _navigateToDashboard(basicUserData,token);
         }
       } else {
         String message;
@@ -177,13 +177,13 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     }
   }
 
-  void _navigateToDashboard(UserData userData) {
+  void _navigateToDashboard(UserData userData,String token) {
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
         pageBuilder:
             (context, animation, secondaryAnimation) =>
-                StudentApp(userData: userData),
+                StudentApp(userData: userData,token: token,),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(
             position: Tween<Offset>(

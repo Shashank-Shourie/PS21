@@ -3,7 +3,8 @@ import 'upload_pdf_page.dart'; // Import the Upload Files page
 
 class OthersPage extends StatelessWidget {
   String UserId;
-  OthersPage({super.key,required this.UserId});
+  String token;
+  OthersPage({super.key, required this.UserId,required this.token});
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +94,9 @@ class OthersPage extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => PDFPickerScreen(UserId: UserId,)),
+                    MaterialPageRoute(
+                      builder: (context) => PDFPickerScreen(UserId: UserId,token: token,),
+                    ),
                   );
                 },
                 icon: const Icon(Icons.upload_file, color: Colors.white),

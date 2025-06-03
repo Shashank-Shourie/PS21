@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
 
 class FormPage extends StatefulWidget {
   final String extractedText;
   final String UserId;
-  const FormPage({super.key, required this.extractedText,required this.UserId});
+  final String token;
+  const FormPage({
+    super.key,
+    required this.extractedText,
+    required this.UserId,
+    required this.token
+  });
 
   @override
   State<FormPage> createState() => _FormPageState();
@@ -91,7 +99,34 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
     setState(() {});
   }
 
-  void changeSubmitStatus(int matchPercentage) {}
+  Future<void> changeSubmitStatus(
+    int matchPercentage,
+    String userId,
+    String token,
+  ) async {
+    final host = dotenv.env['BACKEND_URL']!;
+    final url = Uri.parse('$host/users/update-submission/$userId');
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization':
+              'Bearer $token', // Include the JWT token for authenticateToken middleware
+        },
+        body: jsonEncode({'matchPercentage': matchPercentage}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('Success: ${data['message']}');
+      } else {
+        print('Error ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      print('Exception during request: $e');
+    }
+  }
 
   Map<String, String> _extractDataFromText(String text) {
     Map<String, String> extractedData = {};
@@ -445,7 +480,7 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
                       matchPercentage >= 50
                           ? () {
                             _showSuccessDialog();
-                            changeSubmitStatus(matchPercentage);
+                            changeSubmitStatus(matchPercentage, widget.UserId,widget.token);
                           }
                           : null,
                   icon: const Icon(Icons.save),

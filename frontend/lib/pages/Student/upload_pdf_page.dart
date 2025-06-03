@@ -10,7 +10,8 @@ import 'form_page.dart';
 
 class PDFPickerScreen extends StatefulWidget {
   String UserId;
-  PDFPickerScreen({super.key,required this.UserId});
+  String token;
+  PDFPickerScreen({super.key, required this.UserId,required this.token});
 
   @override
   State<PDFPickerScreen> createState() => _PDFPickerScreenState();
@@ -61,13 +62,15 @@ class _PDFPickerScreenState extends State<PDFPickerScreen> {
           });
           return;
         }
-        
-        newPDFs.add(PDFDocument(
-          name: file.name,
-          path: file.path!,
-          size: file.size,
-          status: PDFStatus.selected,
-        ));
+
+        newPDFs.add(
+          PDFDocument(
+            name: file.name,
+            path: file.path!,
+            size: file.size,
+            status: PDFStatus.selected,
+          ),
+        );
       }
 
       setState(() {
@@ -101,13 +104,17 @@ class _PDFPickerScreenState extends State<PDFPickerScreen> {
     for (int i = 0; i < selectedPDFs.length; i++) {
       setState(() {
         currentProcessingIndex = i;
-        selectedPDFs[i] = selectedPDFs[i].copyWith(status: PDFStatus.processing);
+        selectedPDFs[i] = selectedPDFs[i].copyWith(
+          status: PDFStatus.processing,
+        );
       });
 
       try {
         await uploadPDF(File(selectedPDFs[i].path), i);
         setState(() {
-          selectedPDFs[i] = selectedPDFs[i].copyWith(status: PDFStatus.completed);
+          selectedPDFs[i] = selectedPDFs[i].copyWith(
+            status: PDFStatus.completed,
+          );
         });
       } catch (e) {
         setState(() {
@@ -194,7 +201,8 @@ class _PDFPickerScreenState extends State<PDFPickerScreen> {
           );
         });
       } else {
-        String errorMsg = decoded['error'] ?? 'Server error (Status: ${response.statusCode})';
+        String errorMsg =
+            decoded['error'] ?? 'Server error (Status: ${response.statusCode})';
         if (decoded['details'] != null) {
           errorMsg = '$errorMsg\nDetails: ${decoded['details']}';
         }
@@ -224,19 +232,23 @@ class _PDFPickerScreenState extends State<PDFPickerScreen> {
 
   String getCombinedExtractedText() {
     List<String> extractedTexts = [];
-    
+
     for (int i = 0; i < selectedPDFs.length; i++) {
       PDFDocument pdf = selectedPDFs[i];
       if (pdf.extractedText != null && pdf.extractedText!.isNotEmpty) {
-        extractedTexts.add('--- Document ${i + 1}: ${pdf.name} ---\n${pdf.extractedText!}');
+        extractedTexts.add(
+          '--- Document ${i + 1}: ${pdf.name} ---\n${pdf.extractedText!}',
+        );
       }
     }
-    
+
     return extractedTexts.join('\n\n');
   }
 
   bool get hasCompletedPDFs {
-    return selectedPDFs.any((pdf) => pdf.status == PDFStatus.completed && pdf.extractedText != null);
+    return selectedPDFs.any(
+      (pdf) => pdf.status == PDFStatus.completed && pdf.extractedText != null,
+    );
   }
 
   int get totalPages {
@@ -257,9 +269,15 @@ class _PDFPickerScreenState extends State<PDFPickerScreen> {
           children: [
             Text('Size: ${(pdf.size / 1024 / 1024).toStringAsFixed(2)} MB'),
             if (pdf.pageCount != null)
-              Text('Pages: ${pdf.pageCount}', style: TextStyle(color: Colors.green[700])),
+              Text(
+                'Pages: ${pdf.pageCount}',
+                style: TextStyle(color: Colors.green[700]),
+              ),
             if (pdf.errorMessage != null)
-              Text(pdf.errorMessage!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+              Text(
+                pdf.errorMessage!,
+                style: const TextStyle(color: Colors.red, fontSize: 12),
+              ),
           ],
         ),
         trailing: IconButton(
@@ -328,7 +346,10 @@ class _PDFPickerScreenState extends State<PDFPickerScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: (selectedPDFs.isNotEmpty && !isLoading) ? processAllPDFs : null,
+                    onPressed:
+                        (selectedPDFs.isNotEmpty && !isLoading)
+                            ? processAllPDFs
+                            : null,
                     icon: const Icon(Icons.upload),
                     label: const Text('PROCESS ALL'),
                     style: ElevatedButton.styleFrom(
@@ -340,7 +361,7 @@ class _PDFPickerScreenState extends State<PDFPickerScreen> {
               ],
             ),
             const SizedBox(height: 20),
-            
+
             if (isLoading)
               Column(
                 children: [
@@ -417,10 +438,12 @@ class _PDFPickerScreenState extends State<PDFPickerScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => FormPage(
-                              extractedText: getCombinedExtractedText(),
-                              UserId: widget.UserId,
-                            ),
+                            builder:
+                                (context) => FormPage(
+                                  extractedText: getCombinedExtractedText(),
+                                  UserId: widget.UserId,
+                                  token: widget.token,
+                                ),
                           ),
                         );
                       },
@@ -482,9 +505,4 @@ class PDFDocument {
   }
 }
 
-enum PDFStatus {
-  selected,
-  processing,
-  completed,
-  failed,
-}
+enum PDFStatus { selected, processing, completed, failed }
