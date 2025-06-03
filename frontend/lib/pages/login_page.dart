@@ -7,7 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import './Student/student_dashboard.dart';
 import '../models/userData.dart';
 
-
 Future<String> getLocalIP() async {
   for (var interface in await NetworkInterface.list()) {
     for (var addr in interface.addresses) {
@@ -30,7 +29,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  
+
   String? baseUrl;
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -51,23 +50,18 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       duration: Duration(milliseconds: 1500),
       vsync: this,
     );
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-    
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
     _slideAnimation = Tween<Offset>(
       begin: Offset(0, 0.5),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.elasticOut,
-    ));
-    
+    ).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+    );
+
     _animationController.forward();
   }
 
@@ -75,7 +69,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
     final userData = prefs.getString('user_data');
-    
+
     if (token != null && userData != null) {
       // Auto-login if valid token exists
       final user = UserData.fromJson(jsonDecode(userData), token);
@@ -119,9 +113,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   Future<void> login() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() => _isLoading = true);
-    
+
     try {
       print('Calling: $baseUrl/user/login');
 
@@ -135,17 +129,19 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           'password': passwordController.text,
         }),
       );
-
+      print('Request sent');
       if (response.statusCode == 200) {
+        print('Login successful');
         final data = jsonDecode(response.body);
         final token = data['token'];
         final userId = data['userid'];
         final email = data['email'];
-        
+
         // Get full user details
         final userData = await _getUserDetails(userId, token);
-        
+
         if (userData != null) {
+          print('Got User Data');
           await _storeUserData(userData);
           _navigateToDashboard(userData);
         } else {
@@ -184,8 +180,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => 
-            StudentApp(userData: userData as UserData?),
+        pageBuilder:
+            (context, animation, secondaryAnimation) =>
+                StudentApp(userData: userData as UserData?),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(
             position: Tween<Offset>(
@@ -231,15 +228,18 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: Colors.deepPurple[300]),
-        suffixIcon: obscure
-            ? IconButton(
-                icon: Icon(
-                  _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                  color: Colors.deepPurple[300],
-                ),
-                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-              )
-            : null,
+        suffixIcon:
+            obscure
+                ? IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.deepPurple[300],
+                  ),
+                  onPressed:
+                      () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
+                )
+                : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide(color: Colors.deepPurple[100]!),
@@ -301,7 +301,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 child: Column(
                   children: [
                     SizedBox(height: 40),
-                    
+
                     // Logo/Header Section
                     Container(
                       padding: EdgeInsets.all(20),
@@ -316,15 +316,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                           ),
                         ],
                       ),
-                      child: Icon(
-                        Icons.school,
-                        size: 50,
-                        color: Colors.white,
-                      ),
+                      child: Icon(Icons.school, size: 50, color: Colors.white),
                     ),
-                    
+
                     SizedBox(height: 30),
-                    
+
                     Text(
                       "Welcome Back",
                       style: TextStyle(
@@ -333,9 +329,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         color: Colors.deepPurple[800],
                       ),
                     ),
-                    
+
                     SizedBox(height: 8),
-                    
+
                     Text(
                       "Sign in to continue to your dashboard",
                       style: TextStyle(
@@ -345,9 +341,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    
+
                     SizedBox(height: 50),
-                    
+
                     // Login Form
                     Container(
                       padding: EdgeInsets.all(24),
@@ -372,15 +368,17 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter your email';
                               }
-                              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                              if (!RegExp(
+                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                              ).hasMatch(value)) {
                                 return 'Please enter a valid email';
                               }
                               return null;
                             },
                           ),
-                          
+
                           SizedBox(height: 20),
-                          
+
                           _buildTextField(
                             label: 'Password',
                             controller: passwordController,
@@ -393,9 +391,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               return null;
                             },
                           ),
-                          
+
                           SizedBox(height: 30),
-                          
+
                           // Login Button
                           Container(
                             width: double.infinity,
@@ -411,48 +409,52 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 elevation: 8,
                                 shadowColor: Colors.deepPurple.withOpacity(0.3),
                               ),
-                              child: _isLoading
-                                  ? Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
-                                            color: Colors.white,
-                                            strokeWidth: 2,
+                              child:
+                                  _isLoading
+                                      ? Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                              strokeWidth: 2,
+                                            ),
                                           ),
-                                        ),
-                                        SizedBox(width: 12),
-                                        Text(
-                                          'Signing In...',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
+                                          SizedBox(width: 12),
+                                          Text(
+                                            'Signing In...',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
+                                        ],
+                                      )
+                                      : Text(
+                                        'Sign In',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                      ],
-                                    )
-                                  : Text(
-                                      'Sign In',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
                                       ),
-                                    ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    
+
                     SizedBox(height: 30),
-                    
+
                     // Additional Options
                     TextButton(
                       onPressed: () {
                         // Implement forgot password
-                        _showErrorMessage('Forgot password feature coming soon');
+                        _showErrorMessage(
+                          'Forgot password feature coming soon',
+                        );
                       },
                       child: Text(
                         'Forgot Password?',
