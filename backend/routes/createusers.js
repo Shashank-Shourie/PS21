@@ -346,4 +346,54 @@ router.get('/verify-token', authenticateToken, async (req, res) => {
     }
 });
 
+// Add this route to your createusers.js file
+
+// Update user submission status and match percentage (protected route)
+router.put('/update-submission/:userId', authenticateToken, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { matchPercentage } = req.body;
+        
+        // Ensure user can only update their own submission status
+        if (req.user.id !== userId) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        // Validate match percentage
+        if (matchPercentage === undefined || matchPercentage < 0 || matchPercentage > 100) {
+            return res.status(400).json({ error: 'Valid match percentage (0-100) is required' });
+        }
+
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { 
+                submitted: true,
+                percentage_matched: matchPercentage
+            },
+            { new: true, runValidators: true }
+        ).populate('Organization');
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.status(200).json({
+            message: 'Submission status updated successfully',
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                submitted: user.submitted,
+                percentage_matched: user.percentage_matched,
+                organizationId: user.Organization?._id,
+                organizationName: user.Organization?.name
+            }
+        });
+
+    } catch (error) {
+        console.error('Update submission error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 module.exports = router;

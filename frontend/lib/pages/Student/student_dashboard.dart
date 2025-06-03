@@ -9,12 +9,11 @@ import '../../models/userData.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Import the UserData class from login_page.dart
-void main() => runApp(StudentApp());
 
 class StudentApp extends StatelessWidget {
-  final UserData? userData;
+  final UserData userData;
 
-  const StudentApp({Key? key, this.userData}) : super(key: key);
+  StudentApp({Key? key,required this.userData}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -460,7 +459,7 @@ class _StudentDashboardState extends State<StudentDashboard>
                       context,
                       MaterialPageRoute(
                         // builder: (_) => TgcetPage(userData: currentUser),
-                        builder: (_) => TgcetPage(),
+                        builder: (_) => TgcetPage(UserId: currentUser!.id,),
                       ),
                     );
                   },
@@ -477,7 +476,7 @@ class _StudentDashboardState extends State<StudentDashboard>
                       context,
                       MaterialPageRoute(
                         // builder: (_) => EcetPage(userData: currentUser),
-                        builder: (_) => EcetPage(),
+                        builder: (_) => EcetPage(UserId: currentUser!.id,),
                       ),
                     );
                   },
@@ -494,7 +493,7 @@ class _StudentDashboardState extends State<StudentDashboard>
                       context,
                       MaterialPageRoute(
                         // builder: (_) => OthersPage(userData: currentUser),
-                        builder: (_) => OthersPage(),
+                        builder: (_) => OthersPage(UserId: currentUser!.id,),
                       ),
                     );
                   },

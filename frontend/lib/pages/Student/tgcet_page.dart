@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'upload_pdf_page.dart'; // Import the Upload Files page
 
 class TgcetPage extends StatelessWidget {
-  const TgcetPage({super.key});
+  String UserId;
+  TgcetPage({super.key,required this.UserId});
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +96,7 @@ class TgcetPage extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => PDFPickerScreen()),
+                    MaterialPageRoute(builder: (context) => PDFPickerScreen(UserId: UserId,)),
                   );
                 },
                 icon: const Icon(Icons.upload_file, color: Colors.white),

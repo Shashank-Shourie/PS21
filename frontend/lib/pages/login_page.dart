@@ -183,7 +183,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       PageRouteBuilder(
         pageBuilder:
             (context, animation, secondaryAnimation) =>
-                StudentApp(userData: userData as UserData?),
+                StudentApp(userData: userData),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(
             position: Tween<Offset>(

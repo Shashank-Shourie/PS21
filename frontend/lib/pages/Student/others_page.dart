@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'upload_pdf_page.dart'; // Import the Upload Files page
 
 class OthersPage extends StatelessWidget {
-  const OthersPage({super.key});
+  String UserId;
+  OthersPage({super.key,required this.UserId});
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +93,7 @@ class OthersPage extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => PDFPickerScreen()),
+                    MaterialPageRoute(builder: (context) => PDFPickerScreen(UserId: UserId,)),
                   );
                 },
                 icon: const Icon(Icons.upload_file, color: Colors.white),

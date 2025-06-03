@@ -3,8 +3,8 @@ import 'dart:convert';
 
 class FormPage extends StatefulWidget {
   final String extractedText;
-
-  const FormPage({super.key, required this.extractedText});
+  final String UserId;
+  const FormPage({super.key, required this.extractedText,required this.UserId});
 
   @override
   State<FormPage> createState() => _FormPageState();
@@ -90,6 +90,8 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
 
     setState(() {});
   }
+
+  void changeSubmitStatus(int matchPercentage) {}
 
   Map<String, String> _extractDataFromText(String text) {
     Map<String, String> extractedData = {};
@@ -443,6 +445,7 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
                       matchPercentage >= 50
                           ? () {
                             _showSuccessDialog();
+                            changeSubmitStatus(matchPercentage);
                           }
                           : null,
                   icon: const Icon(Icons.save),
@@ -496,153 +499,151 @@ class _FormPageState extends State<FormPage> with TickerProviderStateMixin {
   }
 
   void _showSuccessDialog() {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (context) => Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      elevation: 8,
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.green.shade50,
-              Colors.white,
-            ],
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Animated Green Tick
-            Container(
-              width: 100,
-              height: 100,
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            elevation: 8,
+            child: Container(
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(20),
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Colors.green.shade400,
-                    Colors.green.shade600,
-                  ],
+                  colors: [Colors.green.shade50, Colors.white],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.green.shade200,
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
               ),
-              child: const Icon(
-                Icons.check,
-                color: Colors.white,
-                size: 60,
-              ),
-            ),
-            const SizedBox(height: 24),
-            
-            // Success Title
-            Text(
-              'Success!',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Colors.green.shade700,
-              ),
-            ),
-            const SizedBox(height: 12),
-            
-            // Success Message
-            Text(
-              'Form data has been validated and submitted successfully.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Colors.grey.shade700,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 8),
-            
-            // Additional Success Info
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.green.shade200),
-              ),
-              child: Row(
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.verified,
-                    color: Colors.green.shade600,
-                    size: 20,
+                  // Animated Green Tick
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Colors.green.shade400, Colors.green.shade600],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.green.shade200,
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 60,
+                    ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(height: 24),
+
+                  // Success Title
                   Text(
-                    'Data verification complete',
-                    style: TextStyle(
+                    'Success!',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
                       color: Colors.green.shade700,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Success Message
+                  Text(
+                    'Form data has been validated and submitted successfully.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Colors.grey.shade700,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Additional Success Info
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green.shade200),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.verified,
+                          color: Colors.green.shade600,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Data verification complete',
+                          style: TextStyle(
+                            color: Colors.green.shade700,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Action Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green.shade600,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 4,
+                        shadowColor: Colors.green.shade200,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.home, size: 20),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Return to Home',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 32),
-            
-            // Action Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.shade600,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 4,
-                  shadowColor: Colors.green.shade200,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.home, size: 20),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Return to Home',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
+          ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -9,7 +9,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'form_page.dart';
 
 class PDFPickerScreen extends StatefulWidget {
-  const PDFPickerScreen({super.key});
+  String UserId;
+  PDFPickerScreen({super.key,required this.UserId});
 
   @override
   State<PDFPickerScreen> createState() => _PDFPickerScreenState();
@@ -418,6 +419,7 @@ class _PDFPickerScreenState extends State<PDFPickerScreen> {
                           MaterialPageRoute(
                             builder: (context) => FormPage(
                               extractedText: getCombinedExtractedText(),
+                              UserId: widget.UserId,
                             ),
                           ),
                         );
