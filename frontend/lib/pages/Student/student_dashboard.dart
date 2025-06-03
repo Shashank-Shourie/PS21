@@ -77,6 +77,7 @@ class _StudentDashboardState extends State<StudentDashboard>
   UserData? currentUser;
   String? baseUrl;
   String organizationName = "Loading...";
+  bool isRefreshing = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -152,7 +153,7 @@ class _StudentDashboardState extends State<StudentDashboard>
       // Replace with your actual backend URL
       final baseUrl = dotenv.env['BACKEND_URL']; // Get from dotenv
       final response = await http.get(
-        Uri.parse('$baseUrl/users/organization/${currentUser!.organizationId}'),
+        Uri.parse('$baseUrl/user/organization/${currentUser!.organizationId}'),
         headers: {
           'Authorization': 'Bearer ${currentUser!.token}',
           'Content-Type': 'application/json',
@@ -168,6 +169,69 @@ class _StudentDashboardState extends State<StudentDashboard>
     } catch (e) {
       print('Error fetching organization: $e');
       setState(() => organizationName = 'YourOrg Pvt Ltd');
+    }
+  }
+
+  Future<void> _refreshUserData() async {
+    if (currentUser == null || baseUrl == null) return;
+
+    setState(() => isRefreshing = true);
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/users/details/${currentUser!.id}'),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          currentUser = UserData(
+            id: data['id'],
+            name: data['name'],
+            email: data['email'],
+            submitted: data['submitted'],
+            percentageMatched: data['percentage_matched']?.toDouble() ?? -1.0,
+            organizationId: data['organizationId'],
+            token: widget.token,
+          );
+        });
+
+        // Update stored user data
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_data', jsonEncode({
+          'id': currentUser!.id,
+          'name': currentUser!.name,
+          'email': currentUser!.email,
+          'submitted': currentUser!.submitted,
+          'percentage_matched': currentUser!.percentageMatched,
+          'organizationId': currentUser!.organizationId,
+        }));
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Status refreshed successfully"),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } else {
+        throw Exception('Failed to refresh user data');
+      }
+    } catch (e) {
+      print('Error refreshing user data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed to refresh status"),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } finally {
+      setState(() => isRefreshing = false);
     }
   }
 
@@ -761,6 +825,20 @@ class _StudentDashboardState extends State<StudentDashboard>
         title: Text(organizationName),
         actions: [
           IconButton(
+            icon: isRefreshing 
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : Icon(Icons.refresh),
+            onPressed: isRefreshing ? null : _refreshUserData,
+            tooltip: "Refresh Status",
+          ),
+          IconButton(
             icon: Icon(Icons.notifications_outlined),
             onPressed: () {
               ScaffoldMessenger.of(
@@ -903,7 +981,7 @@ class _StudentDashboardState extends State<StudentDashboard>
                 Center(
                   child: Container(
                     width: double.infinity,
-                    height: 120,
+                    height: 110,
                     child: ElevatedButton(
                       onPressed: _showUploadDocumentsDialog,
                       style: ElevatedButton.styleFrom(
