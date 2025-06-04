@@ -14,7 +14,8 @@ import '../login_page.dart';
 class StudentApp extends StatelessWidget {
   final UserData userData;
   String token;
-  StudentApp({Key? key, required this.userData, required this.token}) : super(key: key);
+  StudentApp({Key? key, required this.userData, required this.token})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +60,7 @@ class StudentApp extends StatelessWidget {
           color: Colors.white,
         ),
       ),
-      home: StudentDashboard(userData: userData,token: token,),
+      home: StudentDashboard(userData: userData, token: token),
     );
   }
 }
@@ -67,7 +68,8 @@ class StudentApp extends StatelessWidget {
 class StudentDashboard extends StatefulWidget {
   final UserData? userData;
   String token;
-  StudentDashboard({Key? key, this.userData,required this.token}) : super(key: key);
+  StudentDashboard({Key? key, this.userData, required this.token})
+    : super(key: key);
 
   @override
   _StudentDashboardState createState() => _StudentDashboardState();
@@ -146,6 +148,7 @@ class _StudentDashboardState extends State<StudentDashboard>
   Future<void> _fetchOrganizationName() async {
     if (currentUser?.organizationId == null ||
         currentUser?.organizationId.isEmpty == true) {
+      print("No organization id");
       setState(() => organizationName = "YourOrg Pvt Ltd");
       return;
     }
@@ -203,14 +206,17 @@ class _StudentDashboardState extends State<StudentDashboard>
 
         // Update stored user data
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('user_data', jsonEncode({
-          'id': currentUser!.id,
-          'name': currentUser!.name,
-          'email': currentUser!.email,
-          'submitted': currentUser!.submitted,
-          'percentage_matched': currentUser!.percentageMatched,
-          'organizationId': currentUser!.organizationId,
-        }));
+        await prefs.setString(
+          'user_data',
+          jsonEncode({
+            'id': currentUser!.id,
+            'name': currentUser!.name,
+            'email': currentUser!.email,
+            'submitted': currentUser!.submitted,
+            'percentage_matched': currentUser!.percentageMatched,
+            'organizationId': currentUser!.organizationId,
+          }),
+        );
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -524,7 +530,11 @@ class _StudentDashboardState extends State<StudentDashboard>
                       context,
                       MaterialPageRoute(
                         // builder: (_) => TgcetPage(userData: currentUser),
-                        builder: (_) => TgcetPage(UserId: currentUser!.id,token:widget.token,),
+                        builder:
+                            (_) => TgcetPage(
+                              UserId: currentUser!.id,
+                              token: widget.token,
+                            ),
                       ),
                     );
                   },
@@ -541,7 +551,11 @@ class _StudentDashboardState extends State<StudentDashboard>
                       context,
                       MaterialPageRoute(
                         // builder: (_) => EcetPage(userData: currentUser),
-                        builder: (_) => EcetPage(UserId: currentUser!.id,token: widget.token,),
+                        builder:
+                            (_) => EcetPage(
+                              UserId: currentUser!.id,
+                              token: widget.token,
+                            ),
                       ),
                     );
                   },
@@ -558,7 +572,11 @@ class _StudentDashboardState extends State<StudentDashboard>
                       context,
                       MaterialPageRoute(
                         // builder: (_) => OthersPage(userData: currentUser),
-                        builder: (_) => OthersPage(UserId: currentUser!.id,token: widget.token,),
+                        builder:
+                            (_) => OthersPage(
+                              UserId: currentUser!.id,
+                              token: widget.token,
+                            ),
                       ),
                     );
                   },
@@ -826,16 +844,17 @@ class _StudentDashboardState extends State<StudentDashboard>
         title: Text(organizationName),
         actions: [
           IconButton(
-            icon: isRefreshing 
-                ? SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
-                : Icon(Icons.refresh),
+            icon:
+                isRefreshing
+                    ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                    : Icon(Icons.refresh),
             onPressed: isRefreshing ? null : _refreshUserData,
             tooltip: "Refresh Status",
           ),
