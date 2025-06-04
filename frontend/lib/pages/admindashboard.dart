@@ -476,7 +476,7 @@ class _AdminDashboardState extends State<AdminDashboard>
       child: Column(
         children: [
           Container(
-            height: 200,
+            height: 236,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -495,11 +495,11 @@ class _AdminDashboardState extends State<AdminDashboard>
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     CircleAvatar(
-                      radius: 35,
+                      radius: 20,
                       backgroundColor: Colors.white,
                       child: Icon(
                         Icons.admin_panel_settings,
-                        size: 35,
+                        size: 15,
                         color: Colors.deepPurple,
                       ),
                     ),
