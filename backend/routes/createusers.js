@@ -215,7 +215,7 @@ router.get('/organization/:orgId', authenticateToken, async (req, res) => {
 
         res.status(200).json({
             id: organization._id,
-            name: organization.name,
+            name: organization.OrganizationName,
             // Add other organization fields as needed
         });
 
