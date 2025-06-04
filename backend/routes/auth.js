@@ -60,6 +60,7 @@ router.post('/login', async (req, res) => {
         res.status(200).json({ 
             message: 'Login successful',
             token,
+            member,
             org: member.Organization.OrganizationName,
             orgid: member.Organization
         });

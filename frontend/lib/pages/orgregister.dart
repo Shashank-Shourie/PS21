@@ -70,13 +70,17 @@ class _AuthPageState extends State<AuthPage> {
 
     final responseData = jsonDecode(response.body);
     if (response.statusCode == 201) {
+      // In orgregister.dart, update the navigation:
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder:
               (context) => AdminApp(
-                orgName: responseData['member'],
+                orgName:
+                    responseData['member']['Organization']['OrganizationName'],
                 orgId: responseData['orgid']['_id'],
+                adminName: responseData['member']['name'],
+                adminEmail: responseData['member']['email'],
               ),
         ),
       );
@@ -103,11 +107,17 @@ class _AuthPageState extends State<AuthPage> {
       final data = jsonDecode(response.body);
       print(data['org']);
       print(data['orgid']);
+      // In orgregister.dart, update the navigation:
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder:
-              (context) => AdminApp(orgName: data['org'], orgId: data['orgid']['_id']),
+              (context) => AdminApp(
+                orgName: data['member']['Organization']['OrganizationName'],
+                orgId: data['orgid']['_id'],
+                adminName: data['member']['name'],
+                adminEmail: data['member']['email'],
+              ),
         ),
       );
     } else {
