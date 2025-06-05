@@ -17,6 +17,7 @@ app.use(cors());
 app.use('/api/auth', require('./routes/auth'));
 app.use('/extract',require('./routes/awstextract'))
 app.use('/user',require('./routes/createusers'));
+app.use('/storeform',require('./routes/form'))
 
 
 const PORT = process.env.PORT || 5000;
